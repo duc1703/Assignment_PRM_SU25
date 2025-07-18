@@ -10,7 +10,7 @@ import com.example.assignment_prm_su25.model.User;
 
 public class UserDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "sneaker_shop.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 7;
 
     public static final String TABLE_USER = "user";
     public static final String COLUMN_ID = "id";
