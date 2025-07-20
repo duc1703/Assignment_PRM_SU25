@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pressed State -->
+    <item android:state_pressed="true">
+        <layer-list>
+            <!-- Base color -->
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="0"
+                        android:endColor="@color/colorPrimaryDark"
+                        android:startColor="@color/colorPrimary"
+                        android:type="linear" />
+                    <corners android:radius="8dp" />
+                </shape>
+            </item>
+            <!-- Shimmer overlay -->
+            <item>
+                <rotate
+                    android:fromDegrees="0"
+                    android:pivotX="50%"
+                    android:pivotY="50%"
+                    android:toDegrees="360">
+                    <shape android:shape="oval">
+                        <gradient
+                            android:centerColor="#40FFFFFF"
+                            android:centerX="0.3"
+                            android:endColor="#00FFFFFF"
+                            android:startColor="#80FFFFFF"
+                            android:type="sweep" />
+                    </shape>
+                </rotate>
+            </item>
+        </layer-list>
+    </item>
+    
+    <!-- Default State -->
+    <item>
+        <layer-list>
+            <!-- Base color -->
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="0"
+                        android:endColor="@color/colorPrimary"
+                        android:startColor="@color/colorPrimaryDark"
+                        android:type="linear" />
+                    <corners android:radius="8dp" />
+                </shape>
+            </item>
+            <!-- Shimmer overlay -->
+            <item>
+                <rotate
+                    android:fromDegrees="0"
+                    android:pivotX="50%"
+                    android:pivotY="50%"
+                    android:toDegrees="360">
+                    <shape android:shape="oval">
+                        <gradient
+                            android:centerColor="#40FFFFFF"
+                            android:centerX="0.3"
+                            android:endColor="#00FFFFFF"
+                            android:startColor="#80FFFFFF"
+                            android:type="sweep" />
+                    </shape>
+                </rotate>
+            </item>
+        </layer-list>
+    </item>
+</selector>

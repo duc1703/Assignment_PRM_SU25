@@ -32,15 +32,32 @@ android {
 }
 
 dependencies {
-
+    // AndroidX Core
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    implementation("com.github.GrenderG:Toasty:1.5.2")
+    
+    // UI Components
+    implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("com.google.android.material:material:1.11.0")
+    
+    // Image Loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    
+    // Toast Messages
+    implementation("com.github.GrenderG:Toasty:1.5.2")
+    
+    // Rounded ImageView
+    implementation("com.makeramen:roundedimageview:2.3.0")
+    
+    // Shimmer Effect
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
 }

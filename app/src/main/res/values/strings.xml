@@ -1,3 +1,90 @@
 <resources>
-    <string name="app_name">Assignment_PRM_SU25</string>
+    <!-- App Name -->
+    <string name="app_name">Sneaker Shop</string>
+    
+    <!-- Login Screen -->
+    <string name="welcome_back">Chào mừng trở lại!</string>
+    <string name="sign_in_to_continue">Đăng nhập để tiếp tục</string>
+    <string name="email_or_username">Email hoặc tên đăng nhập</string>
+    <string name="password">Mật khẩu</string>
+    <string name="forgot_password">Quên mật khẩu?</string>
+    <string name="sign_in">ĐĂNG NHẬP</string>
+    <string name="or_sign_in_with">hoặc đăng nhập bằng</string>
+    <string name="dont_have_account_register">Chưa có tài khoản? Đăng ký ngay</string>
+<!-- Register Screen -->
+    <string name="create_account">Tạo tài khoản</string>
+    <string name="fill_your_details_to_register">Điền thông tin của bạn để đăng ký</string>
+    <string name="full_name">Họ và tên</string>
+    <string name="email">Email</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="register">ĐĂNG KÝ</string>
+    <string name="already_have_an_account">Đã có tài khoản? Đăng nhập</string>
+    <string name="or_continue_with">hoặc tiếp tục với</string>
+    
+    <!-- Common -->
+    <string name="ok">Đồng ý</string>
+    <string name="cancel">Hủy</string>
+    <string name="error">Lỗi</string>
+    <string name="success">Thành công</string>
+    <string name="loading">Đang tải…</string>
+    
+    <!-- Validation Messages -->
+    <string name="error_field_required">Vui lòng nhập %s</string>
+    <string name="error_invalid_email">Email không hợp lệ</string>
+    <string name="error_invalid_password">Mật khẩu phải có ít nhất 6 ký tự</string>
+<string name="error_name_required">Vui lòng nhập họ và tên</string>
+    <string name="error_email_required">Vui lòng nhập email</string>
+    <string name="error_email_exists">Email đã tồn tại</string>
+    <string name="error_password_required">Vui lòng nhập mật khẩu</string>
+    <string name="error_password_too_short">Mật khẩu phải có ít nhất 6 ký tự</string>
+    <string name="error_confirm_password_required">Vui lòng xác nhận mật khẩu</string>
+    <string name="error_passwords_not_match">Mật khẩu không khớp</string>
+    <string name="registration_successful">Đăng ký thành công!</string>
+    <string name="registration_failed">Đăng ký thất bại. Vui lòng thử lại.</string>
+    <string name="error_occurred">Đã có lỗi xảy ra</string>
+    
+    <!-- Social Login -->
+    <string name="google">Google</string>
+    <string name="facebook">Facebook</string>
+    
+    <!-- Navigation -->
+    <string name="home">Trang chủ</string>
+    <string name="categories">Danh mục</string>
+    <string name="favorites">Yêu thích</string>
+    <string name="profile">Tài khoản</string>
+    
+    <!-- Product -->
+    <string name="add_to_cart">Thêm vào giỏ</string>
+    <string name="view_details">Xem chi tiết</string>
+    <string name="price">Giá: %s</string>
+    <string name="out_of_stock">Hết hàng</string>
+    <string name="in_stock">Còn hàng</string>
+    
+    <!-- Cart -->
+    <string name="my_cart">Giỏ hàng của tôi</string>
+    <string name="checkout">Thanh toán</string>
+    <string name="total">Tổng cộng: %s</string>
+    <string name="empty_cart">Giỏ hàng trống</string>
+    
+    <!-- Profile -->
+    <string name="my_orders">Đơn hàng của tôi</string>
+    <string name="settings">Cài đặt</string>
+    <string name="help">Trợ giúp</string>
+    <string name="logout">Đăng xuất</string>
+    
+    <!-- Order Status -->
+    <string name="order_processing">Đang xử lý</string>
+    <string name="order_shipped">Đang giao hàng</string>
+    <string name="order_delivered">Đã giao hàng</string>
+    <string name="order_cancelled">Đã hủy</string>
+    
+    <!-- Home Screen -->
+    <string name="menu_home">Trang chủ</string>
+    <string name="menu_profile">Tài khoản</string>
+    <string name="action_add">Thêm mới</string>
+    <string name="action_search">Tìm kiếm</string>
+    <string name="action_notifications">Thông báo</string>
+    <string name="action_settings">Cài đặt</string>
+    <string name="action_logout">Đăng xuất</string>
+    <string name="section_format">Mục %1$d</string>
 </resources>

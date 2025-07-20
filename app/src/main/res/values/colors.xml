@@ -1,5 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Base Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Missing color resources referenced in styles -->
+    <color name="primary">@color/colorPrimary</color>
+    <color name="primary_dark">@color/colorPrimaryDark</color>
+    <color name="primary_light">@color/colorPrimaryLight</color>
+    <color name="text_primary">@color/textPrimary</color>
+    <color name="text_secondary">@color/textSecondary</color>
+    
+    <!-- Primary Colors -->
+    <color name="colorPrimary">#FF6B6B</color>
+    <color name="colorPrimaryDark">#E64A4A</color>
+    <color name="colorPrimaryLight">#FF9E9E</color>
+    <color name="colorAccent">#4ECDC4</color>
+    
+    <!-- Text Colors -->
+    <color name="textPrimary">#212121</color>
+    <color name="textSecondary">#757575</color>
+    <color name="textHint">#BDBDBD</color>
+    <color name="textOnPrimary">#FFFFFF</color>
+    
+    <!-- Background Colors -->
+    <color name="background">#F5F5F5</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="error">#F44336</color>
+    
+    <!-- Social Media Colors -->
+    <color name="facebook">#3B5998</color>
+    <color name="google">#DB4437</color>
+    
+    <!-- Additional Colors -->
+    <color name="gray_light">#F5F5F5</color>
+    <color name="gray">#9E9E9E</color>
+    <color name="gray_dark">#616161</color>
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FFC107</color>
+    <color name="info">#2196F3</color>
+    
+    <!-- Gradient Colors -->
+    <color name="gradient_start">#FF6B6B</color>
+    <color name="gradient_center">#4ECDC4</color>
+    <color name="gradient_end">#45B7D1</color>
 </resources>

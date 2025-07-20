@@ -1,20 +1,26 @@
 package com.example.assignment_prm_su25.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.assignment_prm_su25.R;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
 import com.example.assignment_prm_su25.model.User;
-import es.dmoral.toasty.Toasty;
+import com.example.assignment_prm_su25.view.LoadingButton;
+import com.google.android.material.textfield.TextInputLayout;
 
 public class RegisterActivity extends AppCompatActivity {
-    private EditText edtName, edtEmail, edtPassword, edtConfirmPassword;
-    private Button btnRegister;
+    private TextInputLayout tilName, tilEmail, tilPassword, tilConfirmPassword;
+    private com.google.android.material.textfield.TextInputEditText edtName, edtEmail, edtPassword, edtConfirmPassword;
+    private LoadingButton btnRegister;
+    private TextView tvLogin;
     private UserDatabaseHelper dbHelper;
 
     @Override
@@ -22,40 +28,169 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        // Initialize views
+        tilName = findViewById(R.id.tilName);
+        tilEmail = findViewById(R.id.tilEmail);
+        tilPassword = findViewById(R.id.tilPassword);
+        tilConfirmPassword = findViewById(R.id.tilConfirmPassword);
+        
         edtName = findViewById(R.id.edtName);
         edtEmail = findViewById(R.id.edtEmail);
         edtPassword = findViewById(R.id.edtPassword);
         edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
+        
         btnRegister = findViewById(R.id.btnRegister);
+        tvLogin = findViewById(R.id.tvLogin);
+        
         dbHelper = new UserDatabaseHelper(this);
 
-        btnRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String name = edtName.getText().toString().trim();
-                String email = edtEmail.getText().toString().trim();
-                String password = edtPassword.getText().toString();
-                String confirmPassword = edtConfirmPassword.getText().toString();
-                String role = "user";
-                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
-                    Toasty.warning(RegisterActivity.this, "Vui lòng nhập đầy đủ thông tin", Toasty.LENGTH_SHORT, true).show();
-                } else if (!password.equals(confirmPassword)) {
-                    Toasty.error(RegisterActivity.this, "Mật khẩu xác nhận không khớp", Toasty.LENGTH_SHORT, true).show();
-                } else if (dbHelper.getUserByEmail(email) != null) {
-                    Toasty.error(RegisterActivity.this, "Email đã tồn tại!", Toasty.LENGTH_SHORT, true).show();
-                } else {
-                    User user = new User(name, email, password, role);
-                    boolean success = dbHelper.addUser(user);
-                    if (success) {
-                        Toasty.success(RegisterActivity.this, "Đăng ký thành công!", Toasty.LENGTH_SHORT, true).show();
-                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toasty.error(RegisterActivity.this, "Đăng ký thất bại!", Toasty.LENGTH_SHORT, true).show();
-                    }
-                }
+        // Set up click listeners
+        setupClickListeners();
+    }
+
+    private void setupClickListeners() {
+        // Handle register button click
+        btnRegister.setOnClickListener(v -> {
+            if (validateInputs()) {
+                registerUser();
             }
         });
+
+        // Handle login text click
+        tvLogin.setOnClickListener(v -> {
+            // Navigate back to login screen
+            finish();
+        });
+
+        // Handle back button in toolbar
+        findViewById(R.id.toolbar).setOnClickListener(v -> onBackPressed());
     }
-} 
+
+    private boolean validateInputs() {
+        boolean isValid = true;
+        String name = edtName.getText().toString().trim();
+        String email = edtEmail.getText().toString().trim();
+        String password = edtPassword.getText().toString();
+        String confirmPassword = edtConfirmPassword.getText().toString();
+
+        // Validate name
+        if (TextUtils.isEmpty(name)) {
+            tilName.setError(getString(R.string.error_name_required));
+            isValid = false;
+        } else {
+            tilName.setError(null);
+        }
+
+        // Validate email
+        if (TextUtils.isEmpty(email)) {
+            tilEmail.setError(getString(R.string.error_email_required));
+            isValid = false;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            tilEmail.setError(getString(R.string.error_invalid_email));
+            isValid = false;
+        } else if (dbHelper.getUserByEmail(email) != null) {
+            tilEmail.setError(getString(R.string.error_email_exists));
+            isValid = false;
+        } else {
+            tilEmail.setError(null);
+        }
+
+        // Validate password
+        if (TextUtils.isEmpty(password)) {
+            tilPassword.setError(getString(R.string.error_password_required));
+            isValid = false;
+        } else if (password.length() < 6) {
+            tilPassword.setError(getString(R.string.error_password_too_short));
+            isValid = false;
+        } else {
+            tilPassword.setError(null);
+        }
+
+        // Validate confirm password
+        if (TextUtils.isEmpty(confirmPassword)) {
+            tilConfirmPassword.setError(getString(R.string.error_confirm_password_required));
+            isValid = false;
+        } else if (!password.equals(confirmPassword)) {
+            tilConfirmPassword.setError(getString(R.string.error_passwords_not_match));
+            isValid = false;
+        } else {
+            tilConfirmPassword.setError(null);
+        }
+
+        return isValid;
+    }
+
+    private void registerUser() {
+        // Show loading state
+        setLoading(true);
+
+        // Get input values
+        String name = edtName.getText().toString().trim();
+        String email = edtEmail.getText().toString().trim();
+        String password = edtPassword.getText().toString();
+        String role = "user";
+
+        // Simulate network call
+        new Handler().postDelayed(() -> {
+            try {
+                // Check if email already exists (double check)
+                if (dbHelper.getUserByEmail(email) != null) {
+                    runOnUiThread(() -> {
+                        setLoading(false);
+                        tilEmail.setError(getString(R.string.error_email_exists));
+                        showToast(getString(R.string.error_email_exists));
+                    });
+                    return;
+                }
+
+                // Create new user
+                User user = new User(name, email, password, role);
+                boolean success = dbHelper.addUser(user);
+
+                runOnUiThread(() -> {
+                    setLoading(false);
+                    
+                    if (success) {
+                        showToast(getString(R.string.registration_successful));
+                        // Navigate to login screen after short delay
+                        new Handler().postDelayed(() -> {
+                            finish();
+                        }, 1500);
+                    } else {
+                        showToast(getString(R.string.registration_failed));
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    setLoading(false);
+                    showToast(getString(R.string.error_occurred));
+                });
+            }
+        }, 2000); // Simulate network delay
+    }
+
+    private void setLoading(boolean isLoading) {
+        // Update button state
+        btnRegister.setButtonState(
+            isLoading ? LoadingButton.ButtonState.Loading : LoadingButton.ButtonState.Normal
+        );
+        
+        // Disable/enable inputs during loading
+        edtName.setEnabled(!isLoading);
+        edtEmail.setEnabled(!isLoading);
+        edtPassword.setEnabled(!isLoading);
+        edtConfirmPassword.setEnabled(!isLoading);
+        tvLogin.setEnabled(!isLoading);
+        
+        // Disable social login buttons if they exist
+        View btnGoogle = findViewById(R.id.btnGoogle);
+        View btnFacebook = findViewById(R.id.btnFacebook);
+        if (btnGoogle != null) btnGoogle.setEnabled(!isLoading);
+        if (btnFacebook != null) btnFacebook.setEnabled(!isLoading);
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+}
