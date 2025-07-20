@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/edtVariantColor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Màu sắc" />
+
+    <EditText
+        android:id="@+id/edtVariantSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Kích cỡ" />
+
+    <EditText
+        android:id="@+id/edtVariantStock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tồn kho"
+        android:inputType="number" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="8dp">
+        <Button
+            android:id="@+id/btnAddVariant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thêm" />
+        <Button
+            android:id="@+id/btnUpdateVariant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cập nhật"
+            android:layout_marginStart="8dp" />
+        <Button
+            android:id="@+id/btnClearVariant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Xóa trắng"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvVariantList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout> 

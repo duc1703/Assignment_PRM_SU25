@@ -9,10 +9,11 @@ import android.database.Cursor;
 import com.example.assignment_prm_su25.model.User;
 import com.example.assignment_prm_su25.model.Category;
 import com.example.assignment_prm_su25.model.Product;
+import com.example.assignment_prm_su25.model.ProductVariant;
 
 public class UserDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "sneaker_shop.db";
-    private static final int DATABASE_VERSION = 27;
+    private static final int DATABASE_VERSION = 28;
 
     public static final String TABLE_USER = "user";
     public static final String COLUMN_ID = "id";
@@ -34,6 +35,13 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PRODUCT_IMAGE = "image";
     public static final String COLUMN_PRODUCT_CATEGORY_ID = "categoryId";
     public static final String COLUMN_PRODUCT_RATE = "rate";
+
+    public static final String TABLE_PRODUCT_VARIANT = "product_variant";
+    public static final String COLUMN_VARIANT_ID = "id";
+    public static final String COLUMN_VARIANT_PRODUCT_ID = "productId";
+    public static final String COLUMN_VARIANT_COLOR = "color";
+    public static final String COLUMN_VARIANT_SIZE = "size";
+    public static final String COLUMN_VARIANT_STOCK = "stock";
 
     private static final String CREATE_TABLE_USER =
             "CREATE TABLE " + TABLE_USER + " (" +
@@ -61,6 +69,16 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY(" + COLUMN_PRODUCT_CATEGORY_ID + ") REFERENCES " + TABLE_CATEGORY + "(" + COLUMN_CATEGORY_ID + ")" +
                     ")";
 
+    private static final String CREATE_TABLE_PRODUCT_VARIANT =
+            "CREATE TABLE " + TABLE_PRODUCT_VARIANT + " (" +
+                    COLUMN_VARIANT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_VARIANT_PRODUCT_ID + " INTEGER, " +
+                    COLUMN_VARIANT_COLOR + " TEXT, " +
+                    COLUMN_VARIANT_SIZE + " TEXT, " +
+                    COLUMN_VARIANT_STOCK + " INTEGER, " +
+                    "FOREIGN KEY(" + COLUMN_VARIANT_PRODUCT_ID + ") REFERENCES " + TABLE_PRODUCT + "(" + COLUMN_PRODUCT_ID + ")" +
+                    ")";
+
     public UserDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -70,6 +88,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_USER);
         db.execSQL(CREATE_TABLE_CATEGORY);
         db.execSQL(CREATE_TABLE_PRODUCT);
+        db.execSQL(CREATE_TABLE_PRODUCT_VARIANT);
     }
 
     @Override
@@ -77,6 +96,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORY);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCT);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCT_VARIANT);
         onCreate(db);
     }
 
@@ -239,6 +259,57 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     public boolean deleteProduct(int productId) {
         SQLiteDatabase db = this.getWritableDatabase();
         int rows = db.delete(TABLE_PRODUCT, COLUMN_PRODUCT_ID + "=?", new String[]{String.valueOf(productId)});
+        db.close();
+        return rows > 0;
+    }
+
+    // CRUD cho ProductVariant
+    public boolean addProductVariant(ProductVariant variant) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_VARIANT_PRODUCT_ID, variant.getProductId());
+        values.put(COLUMN_VARIANT_COLOR, variant.getColor());
+        values.put(COLUMN_VARIANT_SIZE, variant.getSize());
+        values.put(COLUMN_VARIANT_STOCK, variant.getStock());
+        long result = db.insert(TABLE_PRODUCT_VARIANT, null, values);
+        db.close();
+        return result != -1;
+    }
+
+    public java.util.List<ProductVariant> getProductVariantsByProductId(int productId) {
+        java.util.List<ProductVariant> variantList = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_PRODUCT_VARIANT, null, COLUMN_VARIANT_PRODUCT_ID + "=?", new String[]{String.valueOf(productId)}, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                ProductVariant variant = new ProductVariant();
+                variant.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VARIANT_ID)));
+                variant.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VARIANT_PRODUCT_ID)));
+                variant.setColor(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VARIANT_COLOR)));
+                variant.setSize(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VARIANT_SIZE)));
+                variant.setStock(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VARIANT_STOCK)));
+                variantList.add(variant);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        db.close();
+        return variantList;
+    }
+
+    public boolean updateProductVariant(ProductVariant variant) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_VARIANT_COLOR, variant.getColor());
+        values.put(COLUMN_VARIANT_SIZE, variant.getSize());
+        values.put(COLUMN_VARIANT_STOCK, variant.getStock());
+        int rows = db.update(TABLE_PRODUCT_VARIANT, values, COLUMN_VARIANT_ID + "=?", new String[]{String.valueOf(variant.getId())});
+        db.close();
+        return rows > 0;
+    }
+
+    public boolean deleteProductVariant(int variantId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows = db.delete(TABLE_PRODUCT_VARIANT, COLUMN_VARIANT_ID + "=?", new String[]{String.valueOf(variantId)});
         db.close();
         return rows > 0;
     }

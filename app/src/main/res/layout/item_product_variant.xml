@@ -6,14 +6,6 @@
     android:padding="8dp"
     android:gravity="center_vertical">
 
-    <ImageView
-        android:id="@+id/imgProduct"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:src="@android:drawable/ic_menu_gallery"
-        android:scaleType="centerCrop"
-        android:layout_marginEnd="8dp" />
-
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -21,50 +13,36 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tvProductName"
+            android:id="@+id/tvVariantColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tên sản phẩm"
+            android:text="Màu sắc"
             android:textStyle="bold"
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/tvProductDescription"
+            android:id="@+id/tvVariantSize"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Mô tả sản phẩm"
+            android:text="Kích cỡ"
             android:textSize="14sp"
             android:textColor="#666" />
 
         <TextView
-            android:id="@+id/tvProductPrice"
+            android:id="@+id/tvVariantStock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Giá: 0đ"
+            android:text="Tồn kho: 0"
             android:textSize="14sp"
             android:textColor="#333" />
-
-        <RatingBar
-            android:id="@+id/ratingBarItem"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:numStars="5"
-            android:stepSize="1.0"
-            android:isIndicator="true" />
     </LinearLayout>
 
     <ImageButton
-        android:id="@+id/btnDeleteProduct"
+        android:id="@+id/btnDeleteVariant"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@android:drawable/ic_menu_delete"
         android:contentDescription="Xóa"
         android:background="@android:color/transparent" />
-
-    <Button
-        android:id="@+id/btnViewDetail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="View Detail" />
 
 </LinearLayout> 
