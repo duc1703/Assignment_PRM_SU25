@@ -94,10 +94,10 @@
     <string name="menu_home">Trang chủ</string>
     <string name="menu_profile">Tài khoản</string>
     <string name="action_add">Thêm mới</string>
-    <string name="action_search">Tìm kiếm giày</string>
-    <string name="action_notifications">Thông báo</string>
-    <string name="action_settings">Cài đặt</string>
-    <string name="action_logout">Đăng xuất</string>
+    <!-- <string name="action_search">Tìm kiếm giày</string> -->
+    <!-- <string name="action_notifications">Thông báo</string> -->
+    <!-- <string name="action_settings">Cài đặt</string> -->
+    <!-- <string name="action_logout">Đăng xuất</string> -->
     <string name="section_format">Mục %1$d</string>
     <string name="search_hint">Tìm kiếm giày...</string>
     <string name="no_results_found">Không tìm thấy sản phẩm nào</string>

@@ -133,7 +133,9 @@ public class MainActivity extends AppCompatActivity {
         productAdapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Product product) {
-                // Handle item click
+                Intent intent = new Intent(MainActivity.this, com.example.assignment_prm_su25.ui.ProductDetailActivity.class);
+                intent.putExtra("product_id", product.getId());
+                startActivity(intent);
             }
 
             @Override

@@ -225,4 +225,7 @@
         <item name="android:textSize">12sp</item>
         <item name="android:textStyle">normal</item>
     </style>
+
+    <!-- Fix: ExposedDropdownMenu style for TextInputLayout -->
+    <style name="Widget.MaterialComponents.TextInputLayout.ExposedDropdownMenu" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu" />
 </resources>

@@ -38,6 +38,8 @@
     <color name="gray_dark">#616161</color>
     <color name="success">#4CAF50</color>
     <color name="warning">#FFC107</color>
+    <!-- Added for missing resource -->
+    <color name="colorSecondary">#FF9800</color>
     <color name="info">#2196F3</color>
     
     <!-- Gradient Colors - Shoe Shop Theme -->

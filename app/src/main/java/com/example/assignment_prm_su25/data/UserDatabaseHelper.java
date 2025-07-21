@@ -13,6 +13,17 @@ import com.example.assignment_prm_su25.model.ProductVariant;
 import com.example.assignment_prm_su25.model.Cart;
 
 public class UserDatabaseHelper extends SQLiteOpenHelper {
+    // Brand table
+    public static final String TABLE_BRAND = "brand";
+    public static final String COLUMN_BRAND_ID = "id";
+    public static final String COLUMN_BRAND_NAME = "name";
+    public static final String COLUMN_BRAND_DESCRIPTION = "description";
+
+    private static final String CREATE_TABLE_BRAND =
+            "CREATE TABLE " + TABLE_BRAND + " (" +
+                    COLUMN_BRAND_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_BRAND_NAME + " TEXT, " +
+                    COLUMN_BRAND_DESCRIPTION + " TEXT)";
     private static final String DATABASE_NAME = "sneaker_shop.db";
     private static final int DATABASE_VERSION = 31; // Incremented version to ensure cart table is created
 
@@ -120,6 +131,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_PRODUCT);
         db.execSQL(CREATE_TABLE_PRODUCT_VARIANT);
         db.execSQL(CREATE_TABLE_CART);
+        db.execSQL(CREATE_TABLE_BRAND);
     }
 
     @Override

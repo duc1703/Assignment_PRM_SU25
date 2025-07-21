@@ -26,7 +26,7 @@ public class CartActivity extends AppCompatActivity {
         dbHelper = UserDatabaseHelper.getInstance(this);
 
         // Get user ID from SharedPreferences
-        SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
         userId = prefs.getInt("user_id", -1);
 
         rvCartItems.setLayoutManager(new LinearLayoutManager(this));

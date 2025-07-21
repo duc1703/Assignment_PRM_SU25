@@ -55,44 +55,32 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     @Override
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = productList.get(position);
-        
         // Set basic product info
         holder.tvProductName.setText(product.getName());
         holder.tvProductDescription.setText(product.getDescription());
         holder.tvBrand.setText(product.getBrand());
-        
         // Set size and color info
         String sizeColorInfo = "Size " + product.getSize() + " • " + product.getColor();
         holder.tvSizeColor.setText(sizeColorInfo);
-        
         // Format prices
         DecimalFormat formatter = new DecimalFormat("#,###");
-        
         // Handle discount pricing
         if (product.hasDiscount()) {
-            // Show original price with strikethrough
             String originalPrice = formatter.format(product.getPrice()) + "₫";
             holder.tvOriginalPrice.setText(originalPrice);
             holder.tvOriginalPrice.setPaintFlags(holder.tvOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             holder.tvOriginalPrice.setVisibility(View.VISIBLE);
-            
-            // Show discounted price
             String discountedPrice = formatter.format(product.getDiscountedPrice()) + "₫";
             holder.tvProductPrice.setText(discountedPrice);
-            
-            // Show discount badge
             String discountText = "-" + (int)product.getDiscount() + "%";
             holder.tvDiscount.setText(discountText);
             holder.tvDiscount.setVisibility(View.VISIBLE);
         } else {
-            // No discount - hide original price and discount badge
             holder.tvOriginalPrice.setVisibility(View.GONE);
             holder.tvDiscount.setVisibility(View.GONE);
-            
             String formattedPrice = formatter.format(product.getPrice()) + "₫";
             holder.tvProductPrice.setText(formattedPrice);
         }
-        
         // Set stock info
         String stockText = "Còn " + product.getStock();
         holder.tvStock.setText(stockText);
@@ -101,20 +89,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         } else {
             holder.tvStock.setTextColor(context.getResources().getColor(R.color.success));
         }
-        
         holder.ratingBar.setRating(product.getRating());
-
         Glide.with(context)
                 .load(product.getImageUrl())
                 .placeholder(R.drawable.shimmer_effect)
                 .into(holder.imgProduct);
-
+        // Đặt lại sự kiện click cho itemView (mở chi tiết)
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onItemClick(product);
             }
         });
-
+        // Đặt lại sự kiện click cho nút thêm vào giỏ
         holder.btnAddToCart.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onAddToCartClick(product);
@@ -147,6 +133,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             tvStock = itemView.findViewById(R.id.tvStock);
             ratingBar = itemView.findViewById(R.id.ratingBarItem);
             btnAddToCart = itemView.findViewById(R.id.btnAddToCart);
+
         }
     }
 

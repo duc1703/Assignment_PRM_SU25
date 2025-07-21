@@ -1,6 +1,7 @@
 package com.example.assignment_prm_su25.ui;
 
 import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -177,16 +178,18 @@ public class RegisterActivity extends AppCompatActivity {
                         
                         // If remember account is checked, save login credentials
                         if (cbRememberAccount.isChecked()) {
-                            SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+                            SharedPreferences prefs = getSharedPreferences("RememberAccount", MODE_PRIVATE);
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putString("saved_email", email);
                             editor.putString("saved_password", password);
                             editor.putBoolean("remember_account", true);
                             editor.apply();
                         }
-                        
                         // Navigate to login screen after short delay
                         new Handler().postDelayed(() -> {
+                            Intent intent = new Intent(RegisterActivity.this, com.example.assignment_prm_su25.LoginActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
                             finish();
                         }, 1500);
                     } else {

@@ -30,6 +30,7 @@
         <activity android:name=".ui.CartActivity" android:exported="true" />
         <activity android:name=".ui.NotificationActivity" android:exported="true" />
         <activity android:name=".ui.ProfileActivity" android:exported="true" />
+        <activity android:name=".ui.ProductDetailActivity" android:exported="true" />
 
     </application>
 

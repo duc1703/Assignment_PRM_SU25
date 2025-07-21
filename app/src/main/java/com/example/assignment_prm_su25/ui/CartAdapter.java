@@ -52,6 +52,14 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                     .placeholder(R.drawable.shimmer_effect)
                     .into(holder.imgProduct);
         }
+
+        // Xóa sản phẩm khỏi cart
+        holder.btnDeleteCartItem.setOnClickListener(v -> {
+            dbHelper.deleteCartItem(cart.getId());
+            cartList.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, cartList.size());
+        });
     }
 
     @Override
@@ -60,12 +68,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     }
 
     public static class CartViewHolder extends RecyclerView.ViewHolder {
-        ImageView imgProduct;
+        ImageView imgProduct, btnDeleteCartItem;
         TextView tvProductName, tvProductPrice, tvQuantity;
 
         public CartViewHolder(@NonNull View itemView) {
             super(itemView);
             imgProduct = itemView.findViewById(R.id.imgProduct);
+            btnDeleteCartItem = itemView.findViewById(R.id.btnDeleteCartItem);
             tvProductName = itemView.findViewById(R.id.tvProductName);
             tvProductPrice = itemView.findViewById(R.id.tvProductPrice);
             tvQuantity = itemView.findViewById(R.id.tvQuantity);
