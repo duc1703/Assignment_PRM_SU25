@@ -1,10 +1,10 @@
 <resources>
     <!-- App Name -->
-    <string name="app_name">Sneaker Shop</string>
+    <string name="app_name">Giày Thể Thao</string>
     
     <!-- Login Screen -->
     <string name="welcome_back">Chào mừng trở lại!</string>
-    <string name="sign_in_to_continue">Đăng nhập để tiếp tục</string>
+    <string name="sign_in_to_continue">Đăng nhập để mua sắm giày yêu thích</string>
     <string name="email_or_username">Email hoặc tên đăng nhập</string>
     <string name="password">Mật khẩu</string>
     <string name="forgot_password">Quên mật khẩu?</string>
@@ -49,9 +49,11 @@
     
     <!-- Navigation -->
     <string name="home">Trang chủ</string>
-    <string name="categories">Danh mục</string>
+    <string name="categories">Danh mục giày</string>
     <string name="favorites">Yêu thích</string>
     <string name="profile">Tài khoản</string>
+    <string name="search">Tìm kiếm</string>
+    <string name="notifications">Thông báo</string>
     
     <!-- Product -->
     <string name="add_to_cart">Thêm vào giỏ</string>
@@ -59,6 +61,9 @@
     <string name="price">Giá: %s</string>
     <string name="out_of_stock">Hết hàng</string>
     <string name="in_stock">Còn hàng</string>
+    <string name="featured_products">Sản phẩm nổi bật</string>
+    <string name="new_arrivals">Hàng mới về</string>
+    <string name="best_sellers">Bán chạy nhất</string>
     
     <!-- Cart -->
     <string name="my_cart">Giỏ hàng của tôi</string>
@@ -82,9 +87,27 @@
     <string name="menu_home">Trang chủ</string>
     <string name="menu_profile">Tài khoản</string>
     <string name="action_add">Thêm mới</string>
-    <string name="action_search">Tìm kiếm</string>
+    <string name="action_search">Tìm kiếm giày</string>
     <string name="action_notifications">Thông báo</string>
     <string name="action_settings">Cài đặt</string>
     <string name="action_logout">Đăng xuất</string>
     <string name="section_format">Mục %1$d</string>
+    <string name="search_hint">Tìm kiếm giày...</string>
+    <string name="no_results_found">Không tìm thấy sản phẩm nào</string>
+    
+    <!-- Categories -->
+    <string name="category_all">Tất cả</string>
+    <string name="category_men">Giày Nam</string>
+    <string name="category_women">Giày Nữ</string>
+    <string name="category_kids">Giày Trẻ em</string>
+    <string name="category_brands">Thương hiệu</string>
+    
+    <!-- Profile -->
+    <string name="edit_profile">Chỉnh sửa thông tin</string>
+    <string name="save_changes">Lưu thay đổi</string>
+    <string name="profile_updated">Cập nhật thông tin thành công</string>
+    <string name="user_name">Tên người dùng</string>
+    <string name="user_email">Email</string>
+    <string name="user_phone">Số điện thoại</string>
+    <string name="user_address">Địa chỉ</string>
 </resources>

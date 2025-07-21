@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.example.assignment_prm_su25.R;
 import com.example.assignment_prm_su25.model.Product;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
@@ -55,7 +56,12 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         Product product = productList.get(position);
         holder.tvProductName.setText(product.getName());
         holder.tvProductDescription.setText(product.getDescription());
-        holder.tvProductPrice.setText(String.format("$%.2f", product.getPrice()));
+        
+        // Format price in Vietnamese currency
+        DecimalFormat formatter = new DecimalFormat("#,###");
+        String formattedPrice = formatter.format(product.getPrice()) + "₫";
+        holder.tvProductPrice.setText(formattedPrice);
+        
         holder.ratingBar.setRating(product.getRating());
 
         Glide.with(context)

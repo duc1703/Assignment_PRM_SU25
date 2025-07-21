@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
+import androidx.appcompat.widget.SearchView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,7 +26,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,10 +34,12 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvProducts;
     private ProductAdapter productAdapter;
     private List<Product> productList;
+    private List<Product> filteredProductList;
     private UserDatabaseHelper dbHelper;
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
     private ChipGroup chipGroup;
+    private SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,10 +55,12 @@ public class MainActivity extends AppCompatActivity {
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
         chipGroup = findViewById(R.id.chipGroup);
+        searchView = findViewById(R.id.searchView);
 
         // Initialize product list and adapter
         productList = new ArrayList<>();
-        productAdapter = new ProductAdapter(this, productList);
+        filteredProductList = new ArrayList<>();
+        productAdapter = new ProductAdapter(this, filteredProductList);
 
         // Set up RecyclerView
         rvProducts.setLayoutManager(new GridLayoutManager(this, 2));
@@ -66,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         populateProducts();
         setupViewPager();
         setupCategoryChips();
+        setupSearchView();
 
         // Set up BottomNavigationView listener
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -110,9 +115,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupViewPager() {
         List<String> imageUrls = new ArrayList<>();
-        imageUrls.add("https://www.apple.com/v/iphone-14-pro/c/images/overview/hero/hero_iphone_14_pro__e0act2165xqq_large.jpg");
-        imageUrls.add("https://images.samsung.com/us/smartphones/galaxy-s23-ultra/images/galaxy-s23-ultra-highlights-kv.jpg");
-        imageUrls.add("https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Google_Pixel_7_Pro.width-1200.height-630.mode-crop.jpg");
+        imageUrls.add("https://static.nike.com/a/images/f_auto/dpr_1.0,cs_srgb/w_1423,c_limit/a8b47c4e-98d4-4c8d-9b3c-957b0c6c0a7e/nike-just-do-it.jpg");
+        imageUrls.add("https://brand.assets.adidas.com/image/upload/f_auto,q_auto,fl_lossy/if_w_gt_1920,w_1920/if_w_gt_1920,w_1920/enUS/Images/adidas-3-stripes-brand-banner_tcm221-539349.jpg");
+        imageUrls.add("https://images.vans.com/is/image/Vans/VN0A4U3B18L-HERO?$583x583$");
         ImageSliderAdapter sliderAdapter = new ImageSliderAdapter(this, imageUrls);
         viewPager.setAdapter(sliderAdapter);
 
@@ -120,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupCategoryChips() {
-        String[] categories = {"All", "Phones", "Headphones", "Laptops", "Accessories"};
+        String[] categories = {"Tất cả", "Giày Nam", "Giày Nữ", "Giày Trẻ em", "Thương hiệu"};
         for (String category : categories) {
             Chip chip = new Chip(this);
             chip.setText(category);
@@ -130,14 +135,56 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void populateProducts() {
-        // Add sample products
-        productList.add(new Product(1, "Apple iPhone 14 Pro", "The ultimate iPhone.", 999.99, "https://www.apple.com/v/iphone-14-pro/c/images/overview/hero/hero_iphone_14_pro__e0act2165xqq_large.jpg", 4.8f, 1));
-        productList.add(new Product(2, "Samsung Galaxy S23 Ultra", "The best of Samsung.", 1199.99, "https://images.samsung.com/us/smartphones/galaxy-s23-ultra/images/galaxy-s23-ultra-highlights-kv.jpg", 4.7f, 1));
-        productList.add(new Product(3, "Google Pixel 7 Pro", "The all-pro Google phone.", 899.99, "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Google_Pixel_7_Pro.width-1200.height-630.mode-crop.jpg", 4.6f, 1));
-        productList.add(new Product(4, "OnePlus 11", "The shape of power.", 699.99, "https://oasis.op-mobile.opera.com/op-website-wordpress/wp-content/uploads/2023/01/11.png", 4.5f, 1));
-        productList.add(new Product(5, "Sony WH-1000XM5", "Industry-leading noise cancellation.", 399.99, "https://www.sony.co.uk/image/5d09395f6e9b3c2a3e6f6c31d0b74c5a?fmt=pjpeg&wid=1200&hei=470&bgcolor=F1F5F9&bgc=F1F5F9", 4.9f, 2));
-        productList.add(new Product(6, "Bose QuietComfort 45", "The comfort you love.", 329.99, "https://assets.bose.com/content/dam/Bose_DAM/Web/consumer_electronics/global/products/headphones/qc45/product_silo_images/qc45-le-white-smoke-1-1.psd/jcr:content/renditions/cq5dam.web.1280.1280.jpeg", 4.8f, 2));
+        // Add sample shoe products
+        productList.add(new Product(1, "Nike Air Max 270", "Giày thể thao nam thoải mái, phong cách trẻ trung", 2899000, "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/awjogtdnqxniqqk0wpgf/air-max-270-mens-shoes-KkLcGR.png", 4.8f, 1));
+        productList.add(new Product(2, "Adidas Ultraboost 22", "Giày chạy bộ nữ với công nghệ Boost", 3299000, "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/fbaf991a78bc4896a3e9ad7800abcec6_9366/Ultraboost_22_Shoes_Black_GZ0127_01_standard.jpg", 4.9f, 2));
+        productList.add(new Product(3, "Converse Chuck Taylor All Star", "Giày sneaker cổ điển, phù hợp mọi lứa tuổi", 1599000, "https://www.converse.com/dw/image/v2/BCZC_PRD/on/demandware.static/-/Sites-cnv-master-catalog/default/dw2f8b4f0d/images/a_107/M7650_A_107X1.jpg", 4.6f, 3));
+        productList.add(new Product(4, "Vans Old Skool", "Giày skateboard trẻ trung, năng động", 1899000, "https://images.vans.com/is/image/Vans/D3HY28-HERO?$583x583$", 4.7f, 1));
+        productList.add(new Product(5, "Puma RS-X", "Giày thể thao retro với thiết kế độc đáo", 2199000, "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/374393/01/sv01/fnd/PNA/fmt/png/RS-X-Reinvention-Sneakers", 4.5f, 4));
+        productList.add(new Product(6, "New Balance 574", "Giày lifestyle thoải mái cho mọi hoạt động", 2499000, "https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i?$dw_detail_main_lg$&bgc=f1f1f1&layer=1&bgcolor=f1f1f1&blendMode=mult&scale=10&wid=1600&hei=1600", 4.4f, 1));
+        
+        // Initially show all products
+        filteredProductList.clear();
+        filteredProductList.addAll(productList);
         productAdapter.notifyDataSetChanged();
+    }
+
+    private void setupSearchView() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterProducts(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterProducts(newText);
+                return true;
+            }
+        });
+    }
+
+    private void filterProducts(String query) {
+        filteredProductList.clear();
+        
+        if (query.isEmpty()) {
+            filteredProductList.addAll(productList);
+        } else {
+            String lowerCaseQuery = query.toLowerCase().trim();
+            for (Product product : productList) {
+                if (product.getName().toLowerCase().contains(lowerCaseQuery) ||
+                    product.getDescription().toLowerCase().contains(lowerCaseQuery)) {
+                    filteredProductList.add(product);
+                }
+            }
+        }
+        
+        productAdapter.notifyDataSetChanged();
+        
+        if (filteredProductList.isEmpty() && !query.isEmpty()) {
+            showToast("Không tìm thấy sản phẩm nào");
+        }
     }
 
     private void showToast(String message) {

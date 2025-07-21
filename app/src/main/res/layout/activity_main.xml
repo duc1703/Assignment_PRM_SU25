@@ -17,7 +17,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Home"
+            app:title="@string/app_name"
             app:titleTextColor="@color/colorPrimary"
             app:menu="@menu/menu_main"/>
 
@@ -35,46 +35,80 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/viewPager"
+            <!-- Search Bar -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="16dp"/>
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="25dp"
+                app:cardElevation="2dp">
+
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/searchView"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@color/white"
+                    app:queryHint="@string/search_hint"
+                    app:iconifiedByDefault="false"
+                    app:searchIcon="@drawable/ic_search"
+                    android:layout_margin="4dp"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Image Slider -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/viewPager"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"/>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 app:tabBackground="@drawable/tab_selector"
                 app:tabGravity="center"
                 app:tabIndicatorHeight="0dp"/>
 
+            <!-- Categories Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Categories"
+                android:text="@string/categories"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/textPrimary"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp"/>
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:singleLine="true">
+                android:layout_marginBottom="16dp"
+                app:singleLine="true"
+                app:chipSpacing="8dp">
                 <!-- Chips will be added dynamically -->
             </com.google.android.material.chip.ChipGroup>
 
+            <!-- Featured Products Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Featured Products"
+                android:text="@string/featured_products"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/textPrimary"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"/>
 
             <androidx.recyclerview.widget.RecyclerView

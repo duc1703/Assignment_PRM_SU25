@@ -5,34 +5,51 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    app:strokeWidth="0dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/imgProduct"
+        <!-- Product Image with rounded corners -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="0dp"
-            android:layout_height="180dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/shimmer_effect"
+            android:layout_height="200dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:id="@+id/imgProduct"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/shimmer_effect"
+                android:background="@color/gray_light"/>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tvProductName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Product Name"
-            android:textSize="18sp"
+            android:text="Tên sản phẩm"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/textPrimary"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:maxLines="2"
+            android:ellipsize="end"
             app:layout_constraintTop_toBottomOf="@+id/imgProduct"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
@@ -41,10 +58,12 @@
             android:id="@+id/tvProductDescription"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Product description goes here."
-            android:textSize="14sp"
+            android:text="Mô tả sản phẩm"
+            android:textSize="12sp"
             android:textColor="@color/textSecondary"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
+            android:maxLines="2"
+            android:ellipsize="end"
             app:layout_constraintTop_toBottomOf="@+id/tvProductName"
             app:layout_constraintStart_toStartOf="@+id/tvProductName"
             app:layout_constraintEnd_toEndOf="@+id/tvProductName"/>
@@ -53,11 +72,11 @@
             android:id="@+id/tvProductPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="$0.00"
-            android:textSize="16sp"
+            android:text="0₫"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/colorPrimary"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             app:layout_constraintTop_toBottomOf="@+id/tvProductDescription"
             app:layout_constraintStart_toStartOf="@+id/tvProductDescription"/>
 
@@ -77,12 +96,17 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddToCart"
-            style="@style/Widget.App.Button.IconOnly"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
             app:icon="@drawable/ic_add"
             app:iconTint="@color/white"
+            app:iconSize="20dp"
             app:backgroundTint="@color/colorPrimary"
+            app:cornerRadius="20dp"
             android:layout_marginEnd="16dp"
             app:layout_constraintTop_toTopOf="@+id/tvProductPrice"
             app:layout_constraintBottom_toBottomOf="@+id/ratingBarItem"

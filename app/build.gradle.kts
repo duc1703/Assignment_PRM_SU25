@@ -58,6 +58,9 @@ dependencies {
     // Rounded ImageView
     implementation("com.makeramen:roundedimageview:2.3.0")
     
+    // Circle ImageView
+    implementation("de.hdodenhof:circleimageview:3.1.0")
+    
     // Shimmer Effect
     implementation("com.facebook.shimmer:shimmer:0.5.0")
 }

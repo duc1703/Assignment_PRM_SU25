@@ -11,11 +11,11 @@
     <color name="text_primary">@color/textPrimary</color>
     <color name="text_secondary">@color/textSecondary</color>
     
-    <!-- Primary Colors -->
-    <color name="colorPrimary">#FF6B6B</color>
-    <color name="colorPrimaryDark">#E64A4A</color>
-    <color name="colorPrimaryLight">#FF9E9E</color>
-    <color name="colorAccent">#4ECDC4</color>
+    <!-- Primary Colors - Shoe Shop Theme -->
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryDark">#1976D2</color>
+    <color name="colorPrimaryLight">#BBDEFB</color>
+    <color name="colorAccent">#FF5722</color>
     
     <!-- Text Colors -->
     <color name="textPrimary">#212121</color>
@@ -40,8 +40,15 @@
     <color name="warning">#FFC107</color>
     <color name="info">#2196F3</color>
     
-    <!-- Gradient Colors -->
-    <color name="gradient_start">#FF6B6B</color>
-    <color name="gradient_center">#4ECDC4</color>
-    <color name="gradient_end">#45B7D1</color>
+    <!-- Gradient Colors - Shoe Shop Theme -->
+    <color name="gradient_start">#2196F3</color>
+    <color name="gradient_center">#03DAC5</color>
+    <color name="gradient_end">#00BCD4</color>
+    
+    <!-- Shoe Shop Specific Colors -->
+    <color name="shoe_primary">#2196F3</color>
+    <color name="shoe_secondary">#FF5722</color>
+    <color name="shoe_accent">#03DAC5</color>
+    <color name="shoe_background">#FAFAFA</color>
+    <color name="shoe_surface">#FFFFFF</color>
 </resources>
