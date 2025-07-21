@@ -49,10 +49,10 @@ public class ProductActivity extends AppCompatActivity {
         btnUpdateProduct = findViewById(R.id.btnUpdateProduct);
         btnClearProduct = findViewById(R.id.btnClearProduct);
         rvProductList = findViewById(R.id.rvProductList);
-        dbHelper = new UserDatabaseHelper(this);
+        dbHelper = UserDatabaseHelper.getInstance(this);
 
         rvProductList.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ProductAdapter();
+        adapter = new ProductAdapter(this, new ArrayList<>());
         rvProductList.setAdapter(adapter);
 
         loadCategories();
@@ -65,13 +65,13 @@ public class ProductActivity extends AppCompatActivity {
                 String desc = edtProductDescription.getText().toString().trim();
                 String priceStr = edtProductPrice.getText().toString().trim();
                 String image = edtProductImage.getText().toString().trim();
-                int rate = (int) ratingBar.getRating();
+                float rate = ratingBar.getRating();
                 if (TextUtils.isEmpty(name) || TextUtils.isEmpty(priceStr) || selectedCategoryId == -1) {
                     Toast.makeText(ProductActivity.this, "Vui lòng nhập đủ thông tin bắt buộc", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 double price = Double.parseDouble(priceStr);
-                Product product = new Product(name, desc, price, image, selectedCategoryId, rate);
+                Product product = new Product(0, name, desc, price, image, rate, selectedCategoryId);
                 boolean success = dbHelper.addProduct(product);
                 if (success) {
                     Toast.makeText(ProductActivity.this, "Thêm thành công", Toast.LENGTH_SHORT).show();
@@ -94,7 +94,7 @@ public class ProductActivity extends AppCompatActivity {
                 String desc = edtProductDescription.getText().toString().trim();
                 String priceStr = edtProductPrice.getText().toString().trim();
                 String image = edtProductImage.getText().toString().trim();
-                int rate = (int) ratingBar.getRating();
+                float rate = ratingBar.getRating();
                 if (TextUtils.isEmpty(name) || TextUtils.isEmpty(priceStr) || selectedCategoryId == -1) {
                     Toast.makeText(ProductActivity.this, "Vui lòng nhập đủ thông tin bắt buộc", Toast.LENGTH_SHORT).show();
                     return;
@@ -103,9 +103,9 @@ public class ProductActivity extends AppCompatActivity {
                 selectedProduct.setName(name);
                 selectedProduct.setDescription(desc);
                 selectedProduct.setPrice(price);
-                selectedProduct.setImage(image);
+                selectedProduct.setImageUrl(image);
                 selectedProduct.setCategoryId(selectedCategoryId);
-                selectedProduct.setRate(rate);
+                selectedProduct.setRating(rate);
                 boolean success = dbHelper.updateProduct(selectedProduct);
                 if (success) {
                     Toast.makeText(ProductActivity.this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
@@ -158,8 +158,8 @@ public class ProductActivity extends AppCompatActivity {
                 edtProductName.setText(product.getName());
                 edtProductDescription.setText(product.getDescription());
                 edtProductPrice.setText(String.valueOf(product.getPrice()));
-                edtProductImage.setText(product.getImage());
-                ratingBar.setRating(product.getRate());
+                edtProductImage.setText(product.getImageUrl());
+                ratingBar.setRating(product.getRating());
                 // set spinner category
                 for (int i = 0; i < categoryList.size(); i++) {
                     if (categoryList.get(i).getId() == product.getCategoryId()) {
@@ -188,4 +188,4 @@ public class ProductActivity extends AppCompatActivity {
         spinnerCategory.setSelection(0);
         selectedProduct = null;
     }
-} 
+}

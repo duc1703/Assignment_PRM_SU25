@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.assignment_prm_su25.R;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
 import com.example.assignment_prm_su25.model.User;
-
+import com.example.assignment_prm_su25.LoginActivity;
 public class ChangePasswordActivity extends AppCompatActivity {
     private EditText edtEmail, edtCurrentPassword, edtNewPassword, edtConfirmNewPassword;
     private Button btnChangePassword;
@@ -29,7 +29,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         edtNewPassword = findViewById(R.id.edtNewPassword);
         edtConfirmNewPassword = findViewById(R.id.edtConfirmNewPassword);
         btnChangePassword = findViewById(R.id.btnChangePassword);
-        dbHelper = new UserDatabaseHelper(this);
+        dbHelper = UserDatabaseHelper.getInstance(this);
 
         // Thêm EditText email vào layout nếu chưa có
         // (Nếu bạn đã có trường email trong layout thì bỏ đoạn này và dùng findViewById)

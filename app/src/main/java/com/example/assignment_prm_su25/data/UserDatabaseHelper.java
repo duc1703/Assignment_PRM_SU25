@@ -13,7 +13,16 @@ import com.example.assignment_prm_su25.model.ProductVariant;
 
 public class UserDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "sneaker_shop.db";
-    private static final int DATABASE_VERSION = 28;
+    private static final int DATABASE_VERSION = 29; // Incremented version to ensure onUpgrade is called
+
+    private static UserDatabaseHelper instance;
+
+    public static synchronized UserDatabaseHelper getInstance(Context context) {
+        if (instance == null) {
+            instance = new UserDatabaseHelper(context.getApplicationContext());
+        }
+        return instance;
+    }
 
     public static final String TABLE_USER = "user";
     public static final String COLUMN_ID = "id";
@@ -79,7 +88,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY(" + COLUMN_VARIANT_PRODUCT_ID + ") REFERENCES " + TABLE_PRODUCT + "(" + COLUMN_PRODUCT_ID + ")" +
                     ")";
 
-    public UserDatabaseHelper(Context context) {
+    private UserDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -102,50 +111,52 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
 
     // Thêm user mới (đăng ký)
     public boolean addUser(User user) {
+        // First, check if the user already exists to provide a clear error message.
+        if (getUserByEmail(user.getEmail()) != null) {
+            return false; // User already exists
+        }
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, user.getName());
         values.put(COLUMN_EMAIL, user.getEmail());
         values.put(COLUMN_PASSWORD, user.getPassword());
         values.put(COLUMN_ROLE, user.getRole());
-        long result = db.insert(TABLE_USER, null, values);
-        db.close();
+        // The UNIQUE constraint on the email column will enforce uniqueness at the DB level.
+        long result = db.insertWithOnConflict(TABLE_USER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         return result != -1;
     }
 
     // Lấy user theo email
     public User getUserByEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_USER, null, COLUMN_EMAIL + "=?", new String[]{email}, null, null, null);
         User user = null;
-        if (cursor != null && cursor.moveToFirst()) {
-            user = new User();
-            user.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
-            user.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
-            user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
-            user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
-            user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE)));
-            cursor.close();
+        try (Cursor cursor = db.query(TABLE_USER, null, COLUMN_EMAIL + "=?", new String[]{email}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                user = new User();
+                user.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+                user.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+                user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+                user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+                user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE)));
+            }
         }
-        db.close();
         return user;
     }
 
     // Kiểm tra đăng nhập (email/username + password)
     public User checkUserLogin(String email, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_USER, null, COLUMN_EMAIL + "=? AND " + COLUMN_PASSWORD + "=?", new String[]{email, password}, null, null, null);
         User user = null;
-        if (cursor != null && cursor.moveToFirst()) {
-            user = new User();
-            user.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
-            user.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
-            user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
-            user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
-            user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE)));
-            cursor.close();
+        try (Cursor cursor = db.query(TABLE_USER, null, COLUMN_EMAIL + "=? AND " + COLUMN_PASSWORD + "=?", new String[]{email, password}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                user = new User();
+                user.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+                user.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+                user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+                user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+                user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE)));
+            }
         }
-        db.close();
         return user;
     }
 
@@ -212,9 +223,9 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_PRODUCT_NAME, product.getName());
         values.put(COLUMN_PRODUCT_DESCRIPTION, product.getDescription());
         values.put(COLUMN_PRODUCT_PRICE, product.getPrice());
-        values.put(COLUMN_PRODUCT_IMAGE, product.getImage());
+        values.put(COLUMN_PRODUCT_IMAGE, product.getImageUrl());
         values.put(COLUMN_PRODUCT_CATEGORY_ID, product.getCategoryId());
-        values.put(COLUMN_PRODUCT_RATE, product.getRate());
+        values.put(COLUMN_PRODUCT_RATE, product.getRating());
         long result = db.insert(TABLE_PRODUCT, null, values);
         db.close();
         return result != -1;
@@ -231,9 +242,9 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                 product.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_NAME)));
                 product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_DESCRIPTION)));
                 product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_PRICE)));
-                product.setImage(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_IMAGE)));
+                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_IMAGE)));
                 product.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_CATEGORY_ID)));
-                product.setRate(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_RATE)));
+                product.setRating(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_RATE)));
                 productList.add(product);
             } while (cursor.moveToNext());
             cursor.close();
@@ -248,9 +259,9 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_PRODUCT_NAME, product.getName());
         values.put(COLUMN_PRODUCT_DESCRIPTION, product.getDescription());
         values.put(COLUMN_PRODUCT_PRICE, product.getPrice());
-        values.put(COLUMN_PRODUCT_IMAGE, product.getImage());
+        values.put(COLUMN_PRODUCT_IMAGE, product.getImageUrl());
         values.put(COLUMN_PRODUCT_CATEGORY_ID, product.getCategoryId());
-        values.put(COLUMN_PRODUCT_RATE, product.getRate());
+        values.put(COLUMN_PRODUCT_RATE, product.getRating());
         int rows = db.update(TABLE_PRODUCT, values, COLUMN_PRODUCT_ID + "=?", new String[]{String.valueOf(product.getId())});
         db.close();
         return rows > 0;

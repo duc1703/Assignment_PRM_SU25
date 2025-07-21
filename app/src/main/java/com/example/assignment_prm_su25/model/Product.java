@@ -5,29 +5,20 @@ public class Product {
     private String name;
     private String description;
     private double price;
-    private String image;
+    private String imageUrl;
+    private float rating;
     private int categoryId;
-    private int rate; // 1-5
 
     public Product() {}
 
-    public Product(int id, String name, String description, double price, String image, int categoryId, int rate) {
+    public Product(int id, String name, String description, double price, String imageUrl, float rating, int categoryId) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
-        this.image = image;
+        this.imageUrl = imageUrl;
+        this.rating = rating;
         this.categoryId = categoryId;
-        this.rate = rate;
-    }
-
-    public Product(String name, String description, double price, String image, int categoryId, int rate) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.image = image;
-        this.categoryId = categoryId;
-        this.rate = rate;
     }
 
     public int getId() { return id; }
@@ -38,12 +29,12 @@ public class Product {
     public void setDescription(String description) { this.description = description; }
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
-    public String getImage() { return image; }
-    public void setImage(String image) { this.image = image; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public float getRating() { return rating; }
+    public void setRating(float rating) { this.rating = rating; }
     public int getCategoryId() { return categoryId; }
     public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
-    public int getRate() { return rate; }
-    public void setRate(int rate) { this.rate = rate; }
 
     @Override
     public String toString() {
@@ -52,9 +43,9 @@ public class Product {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", price=" + price +
-                ", image='" + image + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", rating=" + rating +
                 ", categoryId=" + categoryId +
-                ", rate=" + rate +
                 '}';
     }
-} 
+}

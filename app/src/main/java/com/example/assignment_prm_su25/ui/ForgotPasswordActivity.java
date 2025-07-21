@@ -25,7 +25,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         edtEmail = findViewById(R.id.edtEmail);
         btnSend = findViewById(R.id.btnSend);
-        dbHelper = new UserDatabaseHelper(this);
+        dbHelper = UserDatabaseHelper.getInstance(this);
 
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override

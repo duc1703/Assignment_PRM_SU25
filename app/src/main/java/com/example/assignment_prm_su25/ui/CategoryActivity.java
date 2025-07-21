@@ -34,7 +34,7 @@ public class CategoryActivity extends AppCompatActivity {
         btnUpdateCategory = findViewById(R.id.btnUpdateCategory);
         btnClearCategory = findViewById(R.id.btnClearCategory);
         rvCategoryList = findViewById(R.id.rvCategoryList);
-        dbHelper = new UserDatabaseHelper(this);
+        dbHelper = UserDatabaseHelper.getInstance(this);
 
         rvCategoryList.setLayoutManager(new LinearLayoutManager(this));
         adapter = new CategoryAdapter();

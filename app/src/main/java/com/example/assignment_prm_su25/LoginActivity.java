@@ -16,12 +16,16 @@ import com.example.assignment_prm_su25.ui.ForgotPasswordActivity;
 import com.example.assignment_prm_su25.ui.RegisterActivity;
 import com.example.assignment_prm_su25.view.LoadingButton;
 import com.google.android.material.textfield.TextInputLayout;
+import com.example.assignment_prm_su25.data.UserDatabaseHelper;
+import com.example.assignment_prm_su25.model.User;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText edtEmail, edtPassword;
     private LoadingButton btnLogin;
-    private TextView tvRegister, tvForgotPassword;
+    private com.google.android.material.button.MaterialButton tvRegister;
+    private TextView tvForgotPassword;
     private TextInputLayout tilEmail, tilPassword;
+    private UserDatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +38,9 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         tvRegister = findViewById(R.id.tvRegister);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
-        tilEmail = findViewById(R.id.tilEmail);
-        tilPassword = findViewById(R.id.tilPassword);
+        tilEmail = findViewById(R.id.emailLayout);
+        tilPassword = findViewById(R.id.passwordLayout);
+        dbHelper = UserDatabaseHelper.getInstance(this);
 
         // Set click listeners
         setupClickListeners();
@@ -102,32 +107,28 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void performLogin() {
-        // Show loading state
         setLoading(true);
+        String email = edtEmail.getText().toString().trim();
+        String password = edtPassword.getText().toString().trim();
 
-        // Simulate network call
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // This is a mock login. In a real app, you would make an API call here.
-                String email = edtEmail.getText().toString().trim();
-                String password = edtPassword.getText().toString().trim();
-                
-                // Mock successful login
-                if (!TextUtils.isEmpty(email) && !TextUtils.isEmpty(password)) {
-                    showToast(getString(R.string.success));
-                    // Navigate to MainActivity on successful login
+        // Use a Handler to simulate network delay and avoid blocking the UI thread
+        new Handler().postDelayed(() -> {
+            User user = dbHelper.checkUserLogin(email, password);
+            
+            // Switch back to the main thread to update the UI
+            runOnUiThread(() -> {
+                setLoading(false);
+                if (user != null) {
+                    showToast("Đăng nhập thành công!");
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
-                    showToast(getString(R.string.error));
+                    showToast("Sai email hoặc mật khẩu!");
+                    tilPassword.setError("Sai email hoặc mật khẩu!");
                 }
-                
-                // Hide loading state
-                setLoading(false);
-            }
-        }, 2000); // 2 seconds delay to simulate network call
+            });
+        }, 1000); // 1-second delay
     }
 
     private void setLoading(boolean isLoading) {

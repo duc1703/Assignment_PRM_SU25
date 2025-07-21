@@ -42,7 +42,7 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
         
-        dbHelper = new UserDatabaseHelper(this);
+        dbHelper = UserDatabaseHelper.getInstance(this);
 
         // Set up click listeners
         setupClickListeners();
@@ -58,11 +58,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Handle login text click
         tvLogin.setOnClickListener(v -> {
-            // Navigate back to login screen
             finish();
         });
-
-        // Handle back button in toolbar
         findViewById(R.id.toolbar).setOnClickListener(v -> onBackPressed());
     }
 

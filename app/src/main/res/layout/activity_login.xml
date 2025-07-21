@@ -227,23 +227,17 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Register Link -->
-            <com.google.android.material.textview.MaterialTextView
+            <!-- Register Button -->
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/tvRegister"
-                style="@style/Widget.App.TextLink"
-                android:layout_width="wrap_content"
+                style="@style/Widget.App.Button.Outlined"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/dont_have_account_register"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:gravity="center"
-                android:backgroundTint="@color/colorPrimaryLight"
-                android:padding="8dp"
-                android:background="@drawable/bg_rounded_button"
+                android:text="@string/register"
                 app:layout_constraintTop_toBottomOf="@id/cardLogin"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="24dp"/>
+                android:layout_marginTop="16dp"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
