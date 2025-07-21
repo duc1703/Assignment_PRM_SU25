@@ -1,5 +1,6 @@
 package com.example.assignment_prm_su25;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -9,10 +10,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.assignment_prm_su25.model.Product;
+import com.example.assignment_prm_su25.ui.CartActivity;
+import com.example.assignment_prm_su25.ui.ImageSliderAdapter;
+import com.example.assignment_prm_su25.ui.NotificationActivity;
 import com.example.assignment_prm_su25.ui.ProductAdapter;
+import com.example.assignment_prm_su25.ui.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+import com.example.assignment_prm_su25.data.UserDatabaseHelper;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +34,10 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvProducts;
     private ProductAdapter productAdapter;
     private List<Product> productList;
+    private UserDatabaseHelper dbHelper;
+    private ViewPager2 viewPager;
+    private TabLayout tabLayout;
+    private ChipGroup chipGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
 
         rvProducts = findViewById(R.id.rvProducts);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        dbHelper = UserDatabaseHelper.getInstance(this);
+        viewPager = findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
+        chipGroup = findViewById(R.id.chipGroup);
 
         // Initialize product list and adapter
         productList = new ArrayList<>();
@@ -44,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Populate product list with sample data
         populateProducts();
+        setupViewPager();
+        setupCategoryChips();
 
         // Set up BottomNavigationView listener
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -57,15 +79,54 @@ public class MainActivity extends AppCompatActivity {
                     showToast("Search selected");
                     return true;
                 } else if (itemId == R.id.nav_notifications) {
-                    showToast("Notifications selected");
+                    startActivity(new Intent(MainActivity.this, NotificationActivity.class));
                     return true;
                 } else if (itemId == R.id.nav_profile) {
-                    showToast("Profile selected");
+                    startActivity(new Intent(MainActivity.this, ProfileActivity.class));
                     return true;
                 }
                 return false;
             }
         });
+
+        productAdapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Product product) {
+                // Handle item click
+            }
+
+            @Override
+            public void onAddToCartClick(Product product) {
+                dbHelper.addToCart(1, product.getId(), 1); // Replace with actual user ID
+                showToast("Added to cart");
+            }
+
+            @Override
+            public void onDeleteClick(Product product) {
+                // Handle delete click
+            }
+        });
+    }
+
+    private void setupViewPager() {
+        List<String> imageUrls = new ArrayList<>();
+        imageUrls.add("https://www.apple.com/v/iphone-14-pro/c/images/overview/hero/hero_iphone_14_pro__e0act2165xqq_large.jpg");
+        imageUrls.add("https://images.samsung.com/us/smartphones/galaxy-s23-ultra/images/galaxy-s23-ultra-highlights-kv.jpg");
+        imageUrls.add("https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Google_Pixel_7_Pro.width-1200.height-630.mode-crop.jpg");
+        ImageSliderAdapter sliderAdapter = new ImageSliderAdapter(this, imageUrls);
+        viewPager.setAdapter(sliderAdapter);
+
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {}).attach();
+    }
+
+    private void setupCategoryChips() {
+        String[] categories = {"All", "Phones", "Headphones", "Laptops", "Accessories"};
+        for (String category : categories) {
+            Chip chip = new Chip(this);
+            chip.setText(category);
+            chip.setCheckable(true);
+            chipGroup.addView(chip);
+        }
     }
 
     private void populateProducts() {
@@ -81,5 +142,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_cart) {
+            startActivity(new Intent(this, CartActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

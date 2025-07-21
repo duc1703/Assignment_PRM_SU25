@@ -27,6 +27,9 @@
         <activity android:name=".ui.ChangePasswordActivity" android:exported="true" />
         <activity android:name=".ui.CategoryActivity" android:exported="true" />
         <activity android:name=".ui.ProductActivity" android:exported="true" />
+        <activity android:name=".ui.CartActivity" android:exported="true" />
+        <activity android:name=".ui.NotificationActivity" android:exported="true" />
+        <activity android:name=".ui.ProfileActivity" android:exported="true" />
 
     </application>
 

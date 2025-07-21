@@ -176,6 +176,11 @@ public class ProductActivity extends AppCompatActivity {
                     clearInput();
                 }
             }
+
+            @Override
+            public void onAddToCartClick(Product product) {
+                // Not used in this activity
+            }
         });
     }
 

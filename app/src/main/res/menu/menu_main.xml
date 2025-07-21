@@ -13,6 +13,12 @@
         android:icon="@drawable/ic_notifications"
         android:title="@string/action_notifications"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_cart"
+        android:icon="@drawable/ic_add"
+        android:title="Cart"
+        app:showAsAction="ifRoom" />
         
     <item
         android:id="@+id/action_settings"

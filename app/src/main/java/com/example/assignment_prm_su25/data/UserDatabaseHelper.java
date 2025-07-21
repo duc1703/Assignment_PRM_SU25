@@ -10,6 +10,7 @@ import com.example.assignment_prm_su25.model.User;
 import com.example.assignment_prm_su25.model.Category;
 import com.example.assignment_prm_su25.model.Product;
 import com.example.assignment_prm_su25.model.ProductVariant;
+import com.example.assignment_prm_su25.model.Cart;
 
 public class UserDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "sneaker_shop.db";
@@ -52,6 +53,12 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_VARIANT_SIZE = "size";
     public static final String COLUMN_VARIANT_STOCK = "stock";
 
+    public static final String TABLE_CART = "cart";
+    public static final String COLUMN_CART_ID = "id";
+    public static final String COLUMN_CART_USER_ID = "user_id";
+    public static final String COLUMN_CART_PRODUCT_ID = "product_id";
+    public static final String COLUMN_CART_QUANTITY = "quantity";
+
     private static final String CREATE_TABLE_USER =
             "CREATE TABLE " + TABLE_USER + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -88,6 +95,16 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY(" + COLUMN_VARIANT_PRODUCT_ID + ") REFERENCES " + TABLE_PRODUCT + "(" + COLUMN_PRODUCT_ID + ")" +
                     ")";
 
+    private static final String CREATE_TABLE_CART =
+            "CREATE TABLE " + TABLE_CART + " (" +
+                    COLUMN_CART_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_CART_USER_ID + " INTEGER, " +
+                    COLUMN_CART_PRODUCT_ID + " INTEGER, " +
+                    COLUMN_CART_QUANTITY + " INTEGER, " +
+                    "FOREIGN KEY(" + COLUMN_CART_USER_ID + ") REFERENCES " + TABLE_USER + "(" + COLUMN_ID + ")," +
+                    "FOREIGN KEY(" + COLUMN_CART_PRODUCT_ID + ") REFERENCES " + TABLE_PRODUCT + "(" + COLUMN_PRODUCT_ID + ")" +
+                    ")";
+
     private UserDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -98,6 +115,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_CATEGORY);
         db.execSQL(CREATE_TABLE_PRODUCT);
         db.execSQL(CREATE_TABLE_PRODUCT_VARIANT);
+        db.execSQL(CREATE_TABLE_CART);
     }
 
     @Override
@@ -106,6 +124,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORY);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCT);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCT_VARIANT);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CART);
         onCreate(db);
     }
 
@@ -253,6 +272,24 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         return productList;
     }
 
+    public Product getProductById(int productId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Product product = null;
+        try (Cursor cursor = db.query(TABLE_PRODUCT, null, COLUMN_PRODUCT_ID + "=?", new String[]{String.valueOf(productId)}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                product = new Product();
+                product.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_ID)));
+                product.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_NAME)));
+                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_DESCRIPTION)));
+                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_PRICE)));
+                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_IMAGE)));
+                product.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_CATEGORY_ID)));
+                product.setRating(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_RATE)));
+            }
+        }
+        return product;
+    }
+
     public boolean updateProduct(Product product) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -324,4 +361,51 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return rows > 0;
     }
-} 
+
+    // CRUD cho Cart
+    public boolean addToCart(int userId, int productId, int quantity) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_CART_USER_ID, userId);
+        values.put(COLUMN_CART_PRODUCT_ID, productId);
+        values.put(COLUMN_CART_QUANTITY, quantity);
+        long result = db.insert(TABLE_CART, null, values);
+        db.close();
+        return result != -1;
+    }
+
+    public java.util.List<Cart> getCartItems(int userId) {
+        java.util.List<Cart> cartList = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_CART, null, COLUMN_CART_USER_ID + "=?", new String[]{String.valueOf(userId)}, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                Cart cart = new Cart();
+                cart.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CART_ID)));
+                cart.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CART_USER_ID)));
+                cart.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CART_PRODUCT_ID)));
+                cart.setQuantity(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CART_QUANTITY)));
+                cartList.add(cart);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        db.close();
+        return cartList;
+    }
+
+    public boolean updateCartItem(Cart cart) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_CART_QUANTITY, cart.getQuantity());
+        int rows = db.update(TABLE_CART, values, COLUMN_CART_ID + "=?", new String[]{String.valueOf(cart.getId())});
+        db.close();
+        return rows > 0;
+    }
+
+    public boolean deleteCartItem(int cartId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows = db.delete(TABLE_CART, COLUMN_CART_ID + "=?", new String[]{String.valueOf(cartId)});
+        db.close();
+        return rows > 0;
+    }
+}

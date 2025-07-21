@@ -25,6 +25,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
     public interface OnItemClickListener {
         void onItemClick(Product product);
+        void onAddToCartClick(Product product);
         void onDeleteClick(Product product);
     }
 
@@ -67,6 +68,12 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 listener.onItemClick(product);
             }
         });
+
+        holder.btnAddToCart.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onAddToCartClick(product);
+            }
+        });
     }
 
     @Override
@@ -78,6 +85,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         ImageView imgProduct;
         TextView tvProductName, tvProductDescription, tvProductPrice;
         RatingBar ratingBar;
+        View btnAddToCart;
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -86,6 +94,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             tvProductDescription = itemView.findViewById(R.id.tvProductDescription);
             tvProductPrice = itemView.findViewById(R.id.tvProductPrice);
             ratingBar = itemView.findViewById(R.id.ratingBarItem);
+            btnAddToCart = itemView.findViewById(R.id.btnAddToCart);
         }
     }
+
 }

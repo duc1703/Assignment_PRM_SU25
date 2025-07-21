@@ -35,6 +35,38 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/viewPager"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginBottom="16dp"/>
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:tabBackground="@drawable/tab_selector"
+                app:tabGravity="center"
+                app:tabIndicatorHeight="0dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Categories"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:singleLine="true">
+                <!-- Chips will be added dynamically -->
+            </com.google.android.material.chip.ChipGroup>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -42,6 +74,7 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/textPrimary"
+                android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"/>
 
             <androidx.recyclerview.widget.RecyclerView
