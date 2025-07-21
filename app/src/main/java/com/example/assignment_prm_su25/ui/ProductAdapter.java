@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.graphics.Paint;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -54,13 +55,52 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     @Override
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = productList.get(position);
+        
+        // Set basic product info
         holder.tvProductName.setText(product.getName());
         holder.tvProductDescription.setText(product.getDescription());
+        holder.tvBrand.setText(product.getBrand());
         
-        // Format price in Vietnamese currency
+        // Set size and color info
+        String sizeColorInfo = "Size " + product.getSize() + " • " + product.getColor();
+        holder.tvSizeColor.setText(sizeColorInfo);
+        
+        // Format prices
         DecimalFormat formatter = new DecimalFormat("#,###");
-        String formattedPrice = formatter.format(product.getPrice()) + "₫";
-        holder.tvProductPrice.setText(formattedPrice);
+        
+        // Handle discount pricing
+        if (product.hasDiscount()) {
+            // Show original price with strikethrough
+            String originalPrice = formatter.format(product.getPrice()) + "₫";
+            holder.tvOriginalPrice.setText(originalPrice);
+            holder.tvOriginalPrice.setPaintFlags(holder.tvOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            holder.tvOriginalPrice.setVisibility(View.VISIBLE);
+            
+            // Show discounted price
+            String discountedPrice = formatter.format(product.getDiscountedPrice()) + "₫";
+            holder.tvProductPrice.setText(discountedPrice);
+            
+            // Show discount badge
+            String discountText = "-" + (int)product.getDiscount() + "%";
+            holder.tvDiscount.setText(discountText);
+            holder.tvDiscount.setVisibility(View.VISIBLE);
+        } else {
+            // No discount - hide original price and discount badge
+            holder.tvOriginalPrice.setVisibility(View.GONE);
+            holder.tvDiscount.setVisibility(View.GONE);
+            
+            String formattedPrice = formatter.format(product.getPrice()) + "₫";
+            holder.tvProductPrice.setText(formattedPrice);
+        }
+        
+        // Set stock info
+        String stockText = "Còn " + product.getStock();
+        holder.tvStock.setText(stockText);
+        if (product.getStock() <= 5) {
+            holder.tvStock.setTextColor(context.getResources().getColor(R.color.error));
+        } else {
+            holder.tvStock.setTextColor(context.getResources().getColor(R.color.success));
+        }
         
         holder.ratingBar.setRating(product.getRating());
 
@@ -89,7 +129,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
     public static class ProductViewHolder extends RecyclerView.ViewHolder {
         ImageView imgProduct;
-        TextView tvProductName, tvProductDescription, tvProductPrice;
+        TextView tvProductName, tvProductDescription, tvProductPrice, tvOriginalPrice;
+        TextView tvBrand, tvSizeColor, tvDiscount, tvStock;
         RatingBar ratingBar;
         View btnAddToCart;
 
@@ -99,6 +140,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             tvProductName = itemView.findViewById(R.id.tvProductName);
             tvProductDescription = itemView.findViewById(R.id.tvProductDescription);
             tvProductPrice = itemView.findViewById(R.id.tvProductPrice);
+            tvOriginalPrice = itemView.findViewById(R.id.tvOriginalPrice);
+            tvBrand = itemView.findViewById(R.id.tvBrand);
+            tvSizeColor = itemView.findViewById(R.id.tvSizeColor);
+            tvDiscount = itemView.findViewById(R.id.tvDiscount);
+            tvStock = itemView.findViewById(R.id.tvStock);
             ratingBar = itemView.findViewById(R.id.ratingBarItem);
             btnAddToCart = itemView.findViewById(R.id.btnAddToCart);
         }

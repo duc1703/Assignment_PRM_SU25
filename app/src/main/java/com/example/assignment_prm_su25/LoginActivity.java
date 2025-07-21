@@ -1,6 +1,7 @@
 package com.example.assignment_prm_su25;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -41,6 +42,9 @@ public class LoginActivity extends AppCompatActivity {
         tilEmail = findViewById(R.id.emailLayout);
         tilPassword = findViewById(R.id.passwordLayout);
         dbHelper = UserDatabaseHelper.getInstance(this);
+
+        // Load saved login credentials if available
+        loadSavedCredentials();
 
         // Set click listeners
         setupClickListeners();
@@ -119,6 +123,9 @@ public class LoginActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 setLoading(false);
                 if (user != null) {
+                    // Save user session to SharedPreferences
+                    saveUserSession(user);
+                    
                     showToast("Đăng nhập thành công!");
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
@@ -129,6 +136,40 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
         }, 1000); // 1-second delay
+    }
+
+    private void loadSavedCredentials() {
+        SharedPreferences prefs = getSharedPreferences("RememberAccount", MODE_PRIVATE);
+        boolean rememberAccount = prefs.getBoolean("remember_account", false);
+        
+        if (rememberAccount) {
+            String savedEmail = prefs.getString("saved_email", "");
+            String savedPassword = prefs.getString("saved_password", "");
+            
+            if (!savedEmail.isEmpty() && !savedPassword.isEmpty()) {
+                edtEmail.setText(savedEmail);
+                edtPassword.setText(savedPassword);
+            }
+        }
+    }
+
+    private void saveUserSession(User user) {
+        // Save to LoginSession SharedPreferences
+        SharedPreferences loginPrefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
+        SharedPreferences.Editor loginEditor = loginPrefs.edit();
+        loginEditor.putInt("user_id", user.getId());
+        loginEditor.putString("user_email", user.getEmail());
+        loginEditor.putBoolean("is_logged_in", true);
+        loginEditor.apply();
+        
+        // Also save to UserProfile SharedPreferences for ProfileActivity
+        SharedPreferences profilePrefs = getSharedPreferences("UserProfile", MODE_PRIVATE);
+        SharedPreferences.Editor profileEditor = profilePrefs.edit();
+        profileEditor.putString("user_name", user.getName());
+        profileEditor.putString("user_email", user.getEmail());
+        profileEditor.putString("user_phone", user.getPhone() != null ? user.getPhone() : "");
+        profileEditor.putString("user_address", user.getAddress() != null ? user.getAddress() : "");
+        profileEditor.apply();
     }
 
     private void setLoading(boolean isLoading) {

@@ -16,9 +16,10 @@
 
     <item
         android:id="@+id/action_cart"
-        android:icon="@drawable/ic_add"
+        android:icon="@drawable/ic_cart"
         android:title="Cart"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"
+        app:actionLayout="@layout/cart_badge_layout" />
         
     <item
         android:id="@+id/action_settings"

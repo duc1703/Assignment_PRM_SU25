@@ -15,6 +15,8 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.assignment_prm_su25.LoginActivity;
 import com.example.assignment_prm_su25.R;
+import com.example.assignment_prm_su25.data.UserDatabaseHelper;
+import com.example.assignment_prm_su25.model.User;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -25,6 +27,8 @@ public class ProfileActivity extends AppCompatActivity {
     private MaterialButton btnSaveProfile;
     private LinearLayout layoutMyOrders, layoutLogout;
     private SharedPreferences sharedPreferences;
+    private UserDatabaseHelper dbHelper;
+    private User currentUser;
     
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,6 +53,7 @@ public class ProfileActivity extends AppCompatActivity {
         layoutLogout = findViewById(R.id.layoutLogout);
         
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
+        dbHelper = UserDatabaseHelper.getInstance(this);
     }
     
     private void setupToolbar() {
@@ -60,13 +65,37 @@ public class ProfileActivity extends AppCompatActivity {
     }
     
     private void loadUserData() {
-        // Load user data from SharedPreferences
+        // Get logged in user email from SharedPreferences
+        SharedPreferences loginPrefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
+        String userEmail = loginPrefs.getString("user_email", "");
+        
+        if (!userEmail.isEmpty()) {
+            // Load user data from database
+            currentUser = dbHelper.getUserByEmail(userEmail);
+            if (currentUser != null) {
+                // Set data to views
+                tvUserName.setText(currentUser.getName());
+                tvUserEmail.setText(currentUser.getEmail());
+                etUserName.setText(currentUser.getName());
+                etUserEmail.setText(currentUser.getEmail());
+                etUserPhone.setText(currentUser.getPhone() != null ? currentUser.getPhone() : "");
+                etUserAddress.setText(currentUser.getAddress() != null ? currentUser.getAddress() : "");
+            } else {
+                // Fallback to SharedPreferences if user not found in database
+                loadFromSharedPreferences();
+            }
+        } else {
+            // Fallback to SharedPreferences
+            loadFromSharedPreferences();
+        }
+    }
+    
+    private void loadFromSharedPreferences() {
         String userName = sharedPreferences.getString("user_name", "Người dùng");
         String userEmail = sharedPreferences.getString("user_email", "user@example.com");
         String userPhone = sharedPreferences.getString("user_phone", "");
         String userAddress = sharedPreferences.getString("user_address", "");
         
-        // Set data to views
         tvUserName.setText(userName);
         tvUserEmail.setText(userEmail);
         etUserName.setText(userName);
@@ -109,19 +138,51 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
         
-        // Save to SharedPreferences
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("user_name", name);
-        editor.putString("user_email", email);
-        editor.putString("user_phone", phone);
-        editor.putString("user_address", address);
-        editor.apply();
-        
-        // Update header views
-        tvUserName.setText(name);
-        tvUserEmail.setText(email);
-        
-        Toast.makeText(this, getString(R.string.profile_updated), Toast.LENGTH_SHORT).show();
+        // Update user in database if currentUser exists
+        if (currentUser != null) {
+            currentUser.setName(name);
+            currentUser.setEmail(email);
+            currentUser.setPhone(phone);
+            currentUser.setAddress(address);
+            
+            boolean success = dbHelper.updateUser(currentUser);
+            if (success) {
+                // Also save to SharedPreferences for backup
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("user_name", name);
+                editor.putString("user_email", email);
+                editor.putString("user_phone", phone);
+                editor.putString("user_address", address);
+                editor.apply();
+                
+                // Update login session email if changed
+                SharedPreferences loginPrefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
+                SharedPreferences.Editor loginEditor = loginPrefs.edit();
+                loginEditor.putString("user_email", email);
+                loginEditor.apply();
+                
+                // Update header views
+                tvUserName.setText(name);
+                tvUserEmail.setText(email);
+                
+                Toast.makeText(this, "Cập nhật thông tin thành công!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Cập nhật thất bại. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            // Fallback to SharedPreferences only
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("user_name", name);
+            editor.putString("user_email", email);
+            editor.putString("user_phone", phone);
+            editor.putString("user_address", address);
+            editor.apply();
+            
+            tvUserName.setText(name);
+            tvUserEmail.setText(email);
+            
+            Toast.makeText(this, "Cập nhật thông tin thành công!", Toast.LENGTH_SHORT).show();
+        }
     }
     
     private void logout() {

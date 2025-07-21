@@ -14,7 +14,7 @@ import com.example.assignment_prm_su25.model.Cart;
 
 public class UserDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "sneaker_shop.db";
-    private static final int DATABASE_VERSION = 29; // Incremented version to ensure onUpgrade is called
+    private static final int DATABASE_VERSION = 31; // Incremented version to ensure cart table is created
 
     private static UserDatabaseHelper instance;
 
@@ -31,6 +31,8 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_EMAIL = "email";
     public static final String COLUMN_PASSWORD = "password";
     public static final String COLUMN_ROLE = "role";
+    public static final String COLUMN_PHONE = "phone";
+    public static final String COLUMN_ADDRESS = "address";
 
     public static final String TABLE_CATEGORY = "category";
     public static final String COLUMN_CATEGORY_ID = "id";
@@ -65,7 +67,9 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_NAME + " TEXT, " +
                     COLUMN_EMAIL + " TEXT UNIQUE, " +
                     COLUMN_PASSWORD + " TEXT, " +
-                    COLUMN_ROLE + " TEXT)";
+                    COLUMN_ROLE + " TEXT, " +
+                    COLUMN_PHONE + " TEXT, " +
+                    COLUMN_ADDRESS + " TEXT)";
 
     private static final String CREATE_TABLE_CATEGORY =
             "CREATE TABLE " + TABLE_CATEGORY + " (" +
@@ -140,6 +144,8 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_EMAIL, user.getEmail());
         values.put(COLUMN_PASSWORD, user.getPassword());
         values.put(COLUMN_ROLE, user.getRole());
+        values.put(COLUMN_PHONE, user.getPhone() != null ? user.getPhone() : "");
+        values.put(COLUMN_ADDRESS, user.getAddress() != null ? user.getAddress() : "");
         // The UNIQUE constraint on the email column will enforce uniqueness at the DB level.
         long result = db.insertWithOnConflict(TABLE_USER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         return result != -1;
@@ -157,6 +163,8 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                 user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
                 user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
                 user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE)));
+                user.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+                user.setAddress(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ADDRESS)));
             }
         }
         return user;
@@ -174,9 +182,26 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                 user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
                 user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
                 user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE)));
+                user.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+                user.setAddress(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ADDRESS)));
             }
         }
         return user;
+    }
+
+    // Cập nhật thông tin user
+    public boolean updateUser(User user) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, user.getName());
+        values.put(COLUMN_EMAIL, user.getEmail());
+        values.put(COLUMN_PASSWORD, user.getPassword());
+        values.put(COLUMN_ROLE, user.getRole());
+        values.put(COLUMN_PHONE, user.getPhone() != null ? user.getPhone() : "");
+        values.put(COLUMN_ADDRESS, user.getAddress() != null ? user.getAddress() : "");
+        
+        int result = db.update(TABLE_USER, values, COLUMN_ID + "=?", new String[]{String.valueOf(user.getId())});
+        return result > 0;
     }
 
     // Đổi mật khẩu
@@ -407,5 +432,17 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         int rows = db.delete(TABLE_CART, COLUMN_CART_ID + "=?", new String[]{String.valueOf(cartId)});
         db.close();
         return rows > 0;
+    }
+
+    // Get total cart item count for a user
+    public int getCartItemCount(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int count = 0;
+        try (Cursor cursor = db.rawQuery("SELECT SUM(" + COLUMN_CART_QUANTITY + ") FROM " + TABLE_CART + " WHERE " + COLUMN_CART_USER_ID + "=?", new String[]{String.valueOf(userId)})) {
+            if (cursor != null && cursor.moveToFirst()) {
+                count = cursor.getInt(0);
+            }
+        }
+        return count;
     }
 }

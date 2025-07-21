@@ -1,10 +1,17 @@
 package com.example.assignment_prm_su25;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.app.AlertDialog;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,10 +31,15 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.android.material.button.MaterialButton;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +52,19 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ChipGroup chipGroup;
     private SearchView searchView;
+    private TextView cartBadge;
+    private int userId;
+    
+    // Filter components
+    private AutoCompleteTextView brandFilter;
+    private AutoCompleteTextView priceFilter;
+    private MaterialButton btnSortBy;
+    private MaterialButton btnClearFilters;
+    
+    // Filter state
+    private String selectedBrand = "";
+    private String selectedPriceRange = "";
+    private String currentSortOption = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +81,16 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tabLayout);
         chipGroup = findViewById(R.id.chipGroup);
         searchView = findViewById(R.id.searchView);
+        
+        // Initialize filter components
+        brandFilter = findViewById(R.id.brandFilter);
+        priceFilter = findViewById(R.id.priceFilter);
+        btnSortBy = findViewById(R.id.btnSortBy);
+        btnClearFilters = findViewById(R.id.btnClearFilters);
+
+        // Get user ID from SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
+        userId = prefs.getInt("user_id", -1);
 
         // Initialize product list and adapter
         productList = new ArrayList<>();
@@ -71,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
         setupViewPager();
         setupCategoryChips();
         setupSearchView();
+        setupFilters();
 
         // Set up BottomNavigationView listener
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -102,8 +138,13 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAddToCartClick(Product product) {
-                dbHelper.addToCart(1, product.getId(), 1); // Replace with actual user ID
-                showToast("Added to cart");
+                if (userId != -1) {
+                    dbHelper.addToCart(userId, product.getId(), 1);
+                    showToast("Added to cart");
+                    updateCartBadge();
+                } else {
+                    showToast("Please login first");
+                }
             }
 
             @Override
@@ -135,13 +176,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void populateProducts() {
-        // Add sample shoe products
-        productList.add(new Product(1, "Nike Air Max 270", "Giày thể thao nam thoải mái, phong cách trẻ trung", 2899000, "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/awjogtdnqxniqqk0wpgf/air-max-270-mens-shoes-KkLcGR.png", 4.8f, 1));
-        productList.add(new Product(2, "Adidas Ultraboost 22", "Giày chạy bộ nữ với công nghệ Boost", 3299000, "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/fbaf991a78bc4896a3e9ad7800abcec6_9366/Ultraboost_22_Shoes_Black_GZ0127_01_standard.jpg", 4.9f, 2));
-        productList.add(new Product(3, "Converse Chuck Taylor All Star", "Giày sneaker cổ điển, phù hợp mọi lứa tuổi", 1599000, "https://www.converse.com/dw/image/v2/BCZC_PRD/on/demandware.static/-/Sites-cnv-master-catalog/default/dw2f8b4f0d/images/a_107/M7650_A_107X1.jpg", 4.6f, 3));
-        productList.add(new Product(4, "Vans Old Skool", "Giày skateboard trẻ trung, năng động", 1899000, "https://images.vans.com/is/image/Vans/D3HY28-HERO?$583x583$", 4.7f, 1));
-        productList.add(new Product(5, "Puma RS-X", "Giày thể thao retro với thiết kế độc đáo", 2199000, "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/374393/01/sv01/fnd/PNA/fmt/png/RS-X-Reinvention-Sneakers", 4.5f, 4));
-        productList.add(new Product(6, "New Balance 574", "Giày lifestyle thoải mái cho mọi hoạt động", 2499000, "https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i?$dw_detail_main_lg$&bgc=f1f1f1&layer=1&bgcolor=f1f1f1&blendMode=mult&scale=10&wid=1600&hei=1600", 4.4f, 1));
+        // Add sample shoe products with detailed information
+        Product product1 = new Product(1, "Nike Air Max 270", "Giày thể thao nam thoải mái, phong cách trẻ trung", 2899000, "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/awjogtdnqxniqqk0wpgf/air-max-270-mens-shoes-KkLcGR.png", 4.8f, 1, "Nike", "Giày thể thao", "42", "Đen/Trắng", 25, 10.0, true, "Mesh/Synthetic", "Nam");
+        productList.add(product1);
+        
+        Product product2 = new Product(2, "Adidas Ultraboost 22", "Giày chạy bộ nữ với công nghệ Boost", 3299000, "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/fbaf991a78bc4896a3e9ad7800abcec6_9366/Ultraboost_22_Shoes_Black_GZ0127_01_standard.jpg", 4.9f, 2, "Adidas", "Giày chạy bộ", "38", "Đen", 15, 15.0, true, "Primeknit", "Nữ");
+        productList.add(product2);
+        
+        Product product3 = new Product(3, "Converse Chuck Taylor All Star", "Giày sneaker cổ điển, phù hợp mọi lứa tuổi", 1599000, "https://www.converse.com/dw/image/v2/BCZC_PRD/on/demandware.static/-/Sites-cnv-master-catalog/default/dw2f8b4f0d/images/a_107/M7650_A_107X1.jpg", 4.6f, 3, "Converse", "Sneaker", "40", "Trắng", 30, 0.0, true, "Canvas", "Unisex");
+        productList.add(product3);
+        
+        Product product4 = new Product(4, "Vans Old Skool", "Giày skateboard trẻ trung, năng động", 1899000, "https://images.vans.com/is/image/Vans/D3HY28-HERO?$583x583$", 4.7f, 1, "Vans", "Skateboard", "41", "Đen/Trắng", 20, 5.0, true, "Suede/Canvas", "Nam");
+        productList.add(product4);
+        
+        Product product5 = new Product(5, "Puma RS-X", "Giày thể thao retro với thiết kế độc đáo", 2199000, "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/374393/01/sv01/fnd/PNA/fmt/png/RS-X-Reinvention-Sneakers", 4.5f, 4, "Puma", "Lifestyle", "43", "Trắng/Xanh", 18, 20.0, true, "Synthetic/Mesh", "Nam");
+        productList.add(product5);
+        
+        Product product6 = new Product(6, "New Balance 574", "Giày lifestyle thoải mái cho mọi hoạt động", 2499000, "https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i?$dw_detail_main_lg$&bgc=f1f1f1&layer=1&bgcolor=f1f1f1&blendMode=mult&scale=10&wid=1600&hei=1600", 4.4f, 1, "New Balance", "Lifestyle", "39", "Xám", 22, 0.0, true, "Suede/Mesh", "Nữ");
+        productList.add(product6);
+        
+        // Add more products for variety
+        Product product7 = new Product(7, "Jordan Air Jordan 1", "Giày bóng rổ kinh điển với thiết kế iconic", 3599000, "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-Prsm5V.png", 4.9f, 5, "Jordan", "Bóng rổ", "44", "Đỏ/Đen/Trắng", 12, 0.0, true, "Leather", "Nam");
+        productList.add(product7);
+        
+        Product product8 = new Product(8, "Adidas Stan Smith", "Giày tennis cổ điển, phong cách tối giản", 1899000, "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/ee8b7b1d15b54d4b9b4aab4500f8b5e0_9366/Stan_Smith_Shoes_White_M20324_01_standard.jpg", 4.7f, 6, "Adidas", "Tennis", "37", "Trắng/Xanh", 35, 10.0, true, "Leather", "Unisex");
+        productList.add(product8);
         
         // Initially show all products
         filteredProductList.clear();
@@ -166,18 +225,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void filterProducts(String query) {
-        filteredProductList.clear();
+        List<Product> searchResults = new ArrayList<>();
         
         if (query.isEmpty()) {
-            filteredProductList.addAll(productList);
+            searchResults.addAll(productList);
         } else {
             String lowerCaseQuery = query.toLowerCase().trim();
             for (Product product : productList) {
                 if (product.getName().toLowerCase().contains(lowerCaseQuery) ||
-                    product.getDescription().toLowerCase().contains(lowerCaseQuery)) {
-                    filteredProductList.add(product);
+                    product.getDescription().toLowerCase().contains(lowerCaseQuery) ||
+                    product.getBrand().toLowerCase().contains(lowerCaseQuery) ||
+                    product.getCategory().toLowerCase().contains(lowerCaseQuery) ||
+                    product.getColor().toLowerCase().contains(lowerCaseQuery) ||
+                    product.getGender().toLowerCase().contains(lowerCaseQuery)) {
+                    searchResults.add(product);
                 }
             }
+        }
+        
+        // Apply additional filters to search results
+        filteredProductList.clear();
+        for (Product product : searchResults) {
+            boolean matchesBrand = selectedBrand.isEmpty() || product.getBrand().equals(selectedBrand);
+            boolean matchesPrice = selectedPriceRange.isEmpty() || matchesPriceRange(product, selectedPriceRange);
+            
+            if (matchesBrand && matchesPrice) {
+                filteredProductList.add(product);
+            }
+        }
+        
+        // Apply sorting
+        if (!currentSortOption.isEmpty()) {
+            sortProducts(filteredProductList, currentSortOption);
         }
         
         productAdapter.notifyDataSetChanged();
@@ -192,8 +271,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        
+        // Setup cart badge
+        MenuItem cartItem = menu.findItem(R.id.action_cart);
+        View actionView = cartItem.getActionView();
+        if (actionView != null) {
+            cartBadge = actionView.findViewById(R.id.cart_badge);
+            actionView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, CartActivity.class));
+                }
+            });
+            updateCartBadge();
+        }
+        
         return true;
     }
 
@@ -203,7 +297,189 @@ public class MainActivity extends AppCompatActivity {
         if (itemId == R.id.action_cart) {
             startActivity(new Intent(this, CartActivity.class));
             return true;
+        } else if (itemId == R.id.action_logout) {
+            logout();
+            return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateCartBadge() {
+        if (cartBadge != null && userId != -1) {
+            int count = dbHelper.getCartItemCount(userId);
+            if (count > 0) {
+                cartBadge.setText(String.valueOf(count));
+                cartBadge.setVisibility(View.VISIBLE);
+            } else {
+                cartBadge.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void logout() {
+        // Clear user session
+        SharedPreferences prefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.apply();
+        
+        // Redirect to login
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+    
+    private void setupFilters() {
+        setupBrandFilter();
+        setupPriceFilter();
+        setupSortButton();
+        setupClearFiltersButton();
+    }
+    
+    private void setupBrandFilter() {
+        // Get unique brands from products
+        Set<String> brandSet = new HashSet<>();
+        brandSet.add(getString(R.string.all_brands));
+        for (Product product : productList) {
+            brandSet.add(product.getBrand());
+        }
+        
+        List<String> brandList = new ArrayList<>(brandSet);
+        ArrayAdapter<String> brandAdapter = new ArrayAdapter<>(this,
+            android.R.layout.simple_dropdown_item_1line, brandList);
+        brandFilter.setAdapter(brandAdapter);
+        
+        brandFilter.setOnItemClickListener((parent, view, position, id) -> {
+            selectedBrand = brandList.get(position);
+            if (selectedBrand.equals(getString(R.string.all_brands))) {
+                selectedBrand = "";
+            }
+            applyFilters();
+        });
+    }
+    
+    private void setupPriceFilter() {
+        String[] priceRanges = {
+            getString(R.string.all_prices),
+            getString(R.string.price_under_500k),
+            getString(R.string.price_500k_1m),
+            getString(R.string.price_1m_2m),
+            getString(R.string.price_above_2m)
+        };
+        
+        ArrayAdapter<String> priceAdapter = new ArrayAdapter<>(this,
+            android.R.layout.simple_dropdown_item_1line, priceRanges);
+        priceFilter.setAdapter(priceAdapter);
+        
+        priceFilter.setOnItemClickListener((parent, view, position, id) -> {
+            selectedPriceRange = priceRanges[position];
+            if (selectedPriceRange.equals(getString(R.string.all_prices))) {
+                selectedPriceRange = "";
+            }
+            applyFilters();
+        });
+    }
+    
+    private void setupSortButton() {
+        btnSortBy.setOnClickListener(v -> showSortDialog());
+    }
+    
+    private void setupClearFiltersButton() {
+        btnClearFilters.setOnClickListener(v -> clearAllFilters());
+    }
+    
+    private void showSortDialog() {
+        String[] sortOptions = {
+            getString(R.string.sort_name_asc),
+            getString(R.string.sort_name_desc),
+            getString(R.string.sort_price_asc),
+            getString(R.string.sort_price_desc),
+            getString(R.string.sort_newest),
+            getString(R.string.sort_popular)
+        };
+        
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.sort_by))
+               .setItems(sortOptions, (dialog, which) -> {
+                   currentSortOption = sortOptions[which];
+                   applyFilters();
+               })
+               .show();
+    }
+    
+    private void clearAllFilters() {
+        selectedBrand = "";
+        selectedPriceRange = "";
+        currentSortOption = "";
+        
+        brandFilter.setText("", false);
+        priceFilter.setText("", false);
+        
+        applyFilters();
+        showToast("Đã xóa tất cả bộ lọc");
+    }
+    
+    private void applyFilters() {
+        filteredProductList.clear();
+        
+        // Apply brand and price filters
+        for (Product product : productList) {
+            boolean matchesBrand = selectedBrand.isEmpty() || product.getBrand().equals(selectedBrand);
+            boolean matchesPrice = selectedPriceRange.isEmpty() || matchesPriceRange(product, selectedPriceRange);
+            
+            if (matchesBrand && matchesPrice) {
+                filteredProductList.add(product);
+            }
+        }
+        
+        // Apply sorting
+        if (!currentSortOption.isEmpty()) {
+            sortProducts(filteredProductList, currentSortOption);
+        }
+        
+        productAdapter.notifyDataSetChanged();
+        
+        if (filteredProductList.isEmpty()) {
+            showToast("Không tìm thấy sản phẩm phù hợp");
+        }
+    }
+    
+    private boolean matchesPriceRange(Product product, String priceRange) {
+        double price = product.getPrice();
+        
+        if (priceRange.equals(getString(R.string.price_under_500k))) {
+            return price < 500000;
+        } else if (priceRange.equals(getString(R.string.price_500k_1m))) {
+            return price >= 500000 && price < 1000000;
+        } else if (priceRange.equals(getString(R.string.price_1m_2m))) {
+            return price >= 1000000 && price < 2000000;
+        } else if (priceRange.equals(getString(R.string.price_above_2m))) {
+            return price >= 2000000;
+        }
+        
+        return true;
+    }
+    
+    private void sortProducts(List<Product> products, String sortOption) {
+        if (sortOption.equals(getString(R.string.sort_name_asc))) {
+            Collections.sort(products, (p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()));
+        } else if (sortOption.equals(getString(R.string.sort_name_desc))) {
+            Collections.sort(products, (p1, p2) -> p2.getName().compareToIgnoreCase(p1.getName()));
+        } else if (sortOption.equals(getString(R.string.sort_price_asc))) {
+            Collections.sort(products, (p1, p2) -> Double.compare(p1.getPrice(), p2.getPrice()));
+        } else if (sortOption.equals(getString(R.string.sort_price_desc))) {
+            Collections.sort(products, (p1, p2) -> Double.compare(p2.getPrice(), p1.getPrice()));
+        } else if (sortOption.equals(getString(R.string.sort_newest))) {
+            Collections.sort(products, (p1, p2) -> Integer.compare(p2.getId(), p1.getId()));
+        } else if (sortOption.equals(getString(R.string.sort_popular))) {
+            Collections.sort(products, (p1, p2) -> Float.compare(p2.getRating(), p1.getRating()));
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateCartBadge();
     }
 }
