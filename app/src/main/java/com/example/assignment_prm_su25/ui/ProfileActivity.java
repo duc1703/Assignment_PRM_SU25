@@ -1,9 +1,11 @@
+// ProfileActivity.java
 package com.example.assignment_prm_su25.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View; // Import View
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,9 +28,10 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputEditText etUserName, etUserEmail, etUserPhone, etUserAddress;
     private MaterialButton btnSaveProfile;
     private LinearLayout layoutMyOrders, layoutLogout;
+    private MaterialButton btnViewSupportMessages; // Khai báo MaterialButton mới
     private SharedPreferences sharedPreferences;
     private UserDatabaseHelper dbHelper;
-    private User currentUser;
+    private User currentUser; // Biến để lưu thông tin người dùng hiện tại
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,8 +40,9 @@ public class ProfileActivity extends AppCompatActivity {
 
         initViews();
         setupToolbar();
-        loadUserData();
+        loadUserData(); // loadUserData sẽ lấy thông tin người dùng bao gồm cả role
         setupClickListeners();
+        checkAdminAccess(); // Gọi phương thức này để kiểm tra và hiển thị/ẩn nút
     }
 
     private void initViews() {
@@ -51,6 +55,7 @@ public class ProfileActivity extends AppCompatActivity {
         btnSaveProfile = findViewById(R.id.btnSaveProfile);
         layoutMyOrders = findViewById(R.id.layoutMyOrders);
         layoutLogout = findViewById(R.id.layoutLogout);
+        btnViewSupportMessages = findViewById(R.id.btnViewSupportMessages); // Tìm kiếm nút
 
         sharedPreferences = getSharedPreferences("UserProfile", MODE_PRIVATE);
         dbHelper = UserDatabaseHelper.getInstance(this);
@@ -61,20 +66,18 @@ public class ProfileActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.profile); // Đặt tiêu đề cho Toolbar
+            getSupportActionBar().setTitle(R.string.profile);
         }
     }
 
     private void loadUserData() {
-        // Get logged in user email from SharedPreferences
         SharedPreferences loginPrefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
         String userEmail = loginPrefs.getString("user_email", "");
+        int userId = loginPrefs.getInt("user_id", -1); // Lấy userId từ session
 
-        if (!userEmail.isEmpty()) {
-            // Load user data from database
-            currentUser = dbHelper.getUserByEmail(userEmail);
+        if (userId != -1) { // Nếu có userId, ưu tiên load từ DB
+            currentUser = dbHelper.getUserById(userId); // Lấy toàn bộ đối tượng User
             if (currentUser != null) {
-                // Set data to views
                 tvUserName.setText(currentUser.getName());
                 tvUserEmail.setText(currentUser.getEmail());
                 etUserName.setText(currentUser.getName());
@@ -82,11 +85,11 @@ public class ProfileActivity extends AppCompatActivity {
                 etUserPhone.setText(currentUser.getPhone() != null ? currentUser.getPhone() : "");
                 etUserAddress.setText(currentUser.getAddress() != null ? currentUser.getAddress() : "");
             } else {
-                // Fallback to SharedPreferences if user not found in database
+                // Fallback to SharedPreferences if user not found in database (shouldn't happen if login is successful)
                 loadFromSharedPreferences();
             }
         } else {
-            // Fallback to SharedPreferences
+            // Fallback to SharedPreferences if no user ID in session
             loadFromSharedPreferences();
         }
     }
@@ -108,13 +111,27 @@ public class ProfileActivity extends AppCompatActivity {
     private void setupClickListeners() {
         btnSaveProfile.setOnClickListener(v -> saveUserProfile());
 
-        // Thay đổi đoạn code này để mở OrderListActivity
         layoutMyOrders.setOnClickListener(v -> {
             Intent intent = new Intent(ProfileActivity.this, OrderListActivity.class);
             startActivity(intent);
         });
 
         layoutLogout.setOnClickListener(v -> logout());
+    }
+
+    // Phương thức mới để kiểm tra quyền admin
+    private void checkAdminAccess() {
+        if (btnViewSupportMessages != null) {
+            if (currentUser != null && "admin".equals(currentUser.getRole())) {
+                btnViewSupportMessages.setVisibility(View.VISIBLE); // Hiển thị nút nếu là admin
+                btnViewSupportMessages.setOnClickListener(v -> {
+                    Intent intent = new Intent(ProfileActivity.this, SupportMessageListActivity.class);
+                    startActivity(intent);
+                });
+            } else {
+                btnViewSupportMessages.setVisibility(View.GONE); // Ẩn nút nếu không phải admin
+            }
+        }
     }
 
     private void saveUserProfile() {
@@ -141,7 +158,6 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        // Update user in database if currentUser exists
         if (currentUser != null) {
             currentUser.setName(name);
             currentUser.setEmail(email);
@@ -150,7 +166,6 @@ public class ProfileActivity extends AppCompatActivity {
 
             boolean success = dbHelper.updateUser(currentUser);
             if (success) {
-                // Also save to SharedPreferences for backup
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("user_name", name);
                 editor.putString("user_email", email);
@@ -158,13 +173,11 @@ public class ProfileActivity extends AppCompatActivity {
                 editor.putString("user_address", address);
                 editor.apply();
 
-                // Update login session email if changed
                 SharedPreferences loginPrefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
                 SharedPreferences.Editor loginEditor = loginPrefs.edit();
                 loginEditor.putString("user_email", email);
                 loginEditor.apply();
 
-                // Update header views
                 tvUserName.setText(name);
                 tvUserEmail.setText(email);
 
@@ -173,7 +186,6 @@ public class ProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, "Cập nhật thất bại. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
             }
         } else {
-            // Fallback to SharedPreferences only
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("user_name", name);
             editor.putString("user_email", email);
@@ -189,13 +201,11 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void logout() {
-        // Clear user session
         SharedPreferences loginPrefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
         SharedPreferences.Editor editor = loginPrefs.edit();
         editor.clear();
         editor.apply();
 
-        // Navigate to login screen
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

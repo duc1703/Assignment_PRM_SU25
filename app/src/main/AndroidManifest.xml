@@ -31,10 +31,12 @@
         <activity android:name=".ui.NotificationActivity" android:exported="true" />
         <activity android:name=".ui.ProfileActivity" android:exported="true" />
         <activity android:name=".ui.ProductDetailActivity" android:exported="true" />
+        <activity android:name=".ui.SupportMessageDetailActivity" android:parentActivityName=".ui.SupportMessageListActivity" />
         <activity android:name=".ui.ContactSupportActivity" android:parentActivityName=".ui.OrderDetailActivity" />
         <activity android:name=".ui.SupportMessageListActivity" android:parentActivityName=".MainActivity" />
         <activity android:name=".ui.OrderListActivity" android:parentActivityName=".ui.ProfileActivity" />
         <activity android:name=".ui.OrderDetailActivity" android:parentActivityName=".ui.OrderListActivity" />
+
     </application>
 
 </manifest>

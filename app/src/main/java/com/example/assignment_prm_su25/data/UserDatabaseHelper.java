@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 import com.example.assignment_prm_su25.model.Order;
 import com.example.assignment_prm_su25.model.Rating;
 import com.example.assignment_prm_su25.model.SupportMessage;
+import com.example.assignment_prm_su25.model.SupportResponse;
 import com.example.assignment_prm_su25.ui.OrderItem;
 import com.example.assignment_prm_su25.model.User;
 import com.example.assignment_prm_su25.model.Category;
@@ -110,6 +112,12 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_SUPPORT_MESSAGE_MESSAGE = "message";
     public static final String COLUMN_SUPPORT_MESSAGE_TIMESTAMP = "timestamp";
     public static final String COLUMN_SUPPORT_MESSAGE_STATUS = "status";
+    public static final String TABLE_SUPPORT_RESPONSE = "support_responses";
+    public static final String COLUMN_SUPPORT_RESPONSE_ID = "id";
+    public static final String COLUMN_SUPPORT_RESPONSE_MESSAGE_ID = "messageId";
+    public static final String COLUMN_SUPPORT_RESPONSE_ADMIN_ID = "adminId";
+    public static final String COLUMN_SUPPORT_RESPONSE_CONTENT = "responseContent";
+    public static final String COLUMN_SUPPORT_RESPONSE_TIMESTAMP = "timestamp";
 
     private static final String CREATE_TABLE_USER =
             "CREATE TABLE " + TABLE_USER + " (" +
@@ -207,7 +215,16 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     private UserDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
-
+    private static final String CREATE_TABLE_SUPPORT_RESPONSE =
+            "CREATE TABLE " + TABLE_SUPPORT_RESPONSE + " (" +
+                    COLUMN_SUPPORT_RESPONSE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_SUPPORT_RESPONSE_MESSAGE_ID + " INTEGER, " +
+                    COLUMN_SUPPORT_RESPONSE_ADMIN_ID + " INTEGER, " +
+                    COLUMN_SUPPORT_RESPONSE_CONTENT + " TEXT, " +
+                    COLUMN_SUPPORT_RESPONSE_TIMESTAMP + " INTEGER, " +
+                    "FOREIGN KEY(" + COLUMN_SUPPORT_RESPONSE_MESSAGE_ID + ") REFERENCES " + TABLE_SUPPORT_MESSAGE + "(" + COLUMN_SUPPORT_MESSAGE_ID + ")," +
+                    "FOREIGN KEY(" + COLUMN_SUPPORT_RESPONSE_ADMIN_ID + ") REFERENCES " + TABLE_USER + "(" + COLUMN_ID + ")" +
+                    ")";
 
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -221,6 +238,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_ORDER_ITEM);
         db.execSQL(CREATE_TABLE_RATING);
         db.execSQL(CREATE_TABLE_SUPPORT_MESSAGE);
+        db.execSQL(CREATE_TABLE_SUPPORT_RESPONSE);
     }
 
     @Override
@@ -235,7 +253,32 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_RATING);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BRAND);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SUPPORT_MESSAGE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SUPPORT_RESPONSE);
         onCreate(db);
+    }
+    public void createDefaultAdminUser() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        // Kiểm tra xem đã có người dùng admin nào chưa
+        Cursor cursor = null;
+        try {
+            cursor = db.query(TABLE_USER, new String[]{COLUMN_ID}, COLUMN_ROLE + "=?", new String[]{"admin"}, null, null, null);
+            if (cursor != null && cursor.getCount() == 0) {
+                // Chưa có admin, tạo một tài khoản admin mặc định
+                ContentValues values = new ContentValues();
+                values.put(COLUMN_NAME, "Admin User");
+                values.put(COLUMN_EMAIL, "admin@example.com"); // Email admin mặc định
+                values.put(COLUMN_PASSWORD, "admin123"); // Mật khẩu admin mặc định
+                values.put(COLUMN_ROLE, "admin");
+                values.put(COLUMN_PHONE, "0987654321");
+                values.put(COLUMN_ADDRESS, "Admin Address");
+                db.insert(TABLE_USER, null, values);
+                Log.d("UserDatabaseHelper", "Default admin user created.");
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
     }
     // Thêm user mới (đăng ký)
     public boolean addUser(User user) {
@@ -887,5 +930,86 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
             }
         }
         return messageList;
+    }
+    public boolean addSupportResponse(SupportResponse response) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SUPPORT_RESPONSE_MESSAGE_ID, response.getMessageId());
+        values.put(COLUMN_SUPPORT_RESPONSE_ADMIN_ID, response.getAdminId());
+        values.put(COLUMN_SUPPORT_RESPONSE_CONTENT, response.getResponseContent());
+        values.put(COLUMN_SUPPORT_RESPONSE_TIMESTAMP, response.getTimestamp());
+
+        long result = db.insert(TABLE_SUPPORT_RESPONSE, null, values);
+        if (result != -1) {
+            // Cập nhật trạng thái của tin nhắn hỗ trợ thành "Replied"
+            updateSupportMessageStatus(response.getMessageId(), "Replied");
+            return true;
+        }
+        return false;
+    }
+
+    // Lấy tất cả câu trả lời cho một tin nhắn hỗ trợ cụ thể
+    public List<SupportResponse> getSupportResponsesByMessageId(int messageId) {
+        List<SupportResponse> responseList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.query(TABLE_SUPPORT_RESPONSE, null,
+                    COLUMN_SUPPORT_RESPONSE_MESSAGE_ID + "=?",
+                    new String[]{String.valueOf(messageId)},
+                    null, null, COLUMN_SUPPORT_RESPONSE_TIMESTAMP + " ASC"); // Sắp xếp theo thời gian tăng dần
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    SupportResponse response = new SupportResponse();
+                    response.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_RESPONSE_ID)));
+                    response.setMessageId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_RESPONSE_MESSAGE_ID)));
+                    response.setAdminId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_RESPONSE_ADMIN_ID)));
+                    response.setResponseContent(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_RESPONSE_CONTENT)));
+                    response.setTimestamp(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_RESPONSE_TIMESTAMP)));
+                    responseList.add(response);
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return responseList;
+    }
+
+    // Phương thức để cập nhật trạng thái của một tin nhắn hỗ trợ
+    public boolean updateSupportMessageStatus(int messageId, String newStatus) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SUPPORT_MESSAGE_STATUS, newStatus);
+        int rowsAffected = db.update(TABLE_SUPPORT_MESSAGE, values,
+                COLUMN_SUPPORT_MESSAGE_ID + "=?", new String[]{String.valueOf(messageId)});
+        return rowsAffected > 0;
+    }
+
+    // Phương thức mới để lấy SupportMessage theo ID (cần cho SupportMessageDetailActivity)
+    public SupportMessage getSupportMessageById(int messageId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        SupportMessage message = null;
+        Cursor cursor = null;
+        try {
+            cursor = db.query(TABLE_SUPPORT_MESSAGE, null, COLUMN_SUPPORT_MESSAGE_ID + "=?", new String[]{String.valueOf(messageId)}, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                message = new SupportMessage();
+                message.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_MESSAGE_ID)));
+                message.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_MESSAGE_USER_ID)));
+                message.setOrderId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_MESSAGE_ORDER_ID)));
+                message.setSubject(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_MESSAGE_SUBJECT)));
+                message.setMessage(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_MESSAGE_MESSAGE)));
+                message.setTimestamp(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_MESSAGE_TIMESTAMP)));
+                message.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUPPORT_MESSAGE_STATUS)));
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return message;
     }
 }

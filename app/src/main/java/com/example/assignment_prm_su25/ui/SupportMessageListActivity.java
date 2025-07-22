@@ -1,4 +1,7 @@
+// app/src/main/java/com/example/assignment_prm_su25/ui/SupportMessageListActivity.java
 package com.example.assignment_prm_su25.ui;
+
+import android.content.Intent; // Thêm import này
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -57,8 +60,10 @@ public class SupportMessageListActivity extends AppCompatActivity {
             rvSupportMessages.setAdapter(adapter);
 
             adapter.setOnItemClickListener(message -> {
-                // TODO: Implement logic to view full message details or change status
-                Toast.makeText(SupportMessageListActivity.this, "Xem chi tiết tin nhắn: " + message.getSubject(), Toast.LENGTH_SHORT).show();
+                // Mở SupportMessageDetailActivity khi click vào tin nhắn
+                Intent intent = new Intent(SupportMessageListActivity.this, SupportMessageDetailActivity.class);
+                intent.putExtra("message_id", message.getId()); // Truyền ID tin nhắn
+                startActivity(intent);
             });
         }
     }
@@ -75,6 +80,6 @@ public class SupportMessageListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadMessages(); // Tải lại tin nhắn khi quay lại màn hình
+        loadMessages(); // Tải lại tin nhắn khi quay lại màn hình (để thấy trạng thái cập nhật)
     }
 }

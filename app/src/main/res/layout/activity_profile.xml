@@ -280,6 +280,26 @@
 
                     </LinearLayout>
 
+                    <!-- Divider before new button -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/gray_light"
+                        android:layout_marginVertical="8dp"/>
+
+                    <!-- New Support Messages Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnViewSupportMessages"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Xem Tin nhắn Hỗ trợ (Admin)"
+                        app:icon="@drawable/ic_email"
+                        app:backgroundTint="@color/colorPrimary"
+                        app:cornerRadius="28dp"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp"/> <!-- Adjusted margin for consistency -->
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>

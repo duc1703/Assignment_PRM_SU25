@@ -33,6 +33,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+
         // Initialize views
         edtEmail = findViewById(R.id.edtEmail);
         edtPassword = findViewById(R.id.edtPassword);
@@ -42,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
         tilEmail = findViewById(R.id.emailLayout);
         tilPassword = findViewById(R.id.passwordLayout);
         dbHelper = UserDatabaseHelper.getInstance(this);
+        dbHelper.createDefaultAdminUser();
 
         // Load saved login credentials if available
         loadSavedCredentials();
