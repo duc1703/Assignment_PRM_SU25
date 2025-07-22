@@ -19,6 +19,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public interface OnItemClickListener {
         void onItemClick(Category category);
         void onDeleteClick(Category category);
+        void onEditClick(Category category);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
@@ -54,6 +55,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
                 if (listener != null) listener.onDeleteClick(category);
             }
         });
+        holder.btnEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) listener.onEditClick(category);
+            }
+        });
     }
 
     @Override
@@ -63,12 +70,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvDescription;
-        ImageButton btnDelete;
+        ImageButton btnDelete, btnEdit;
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvCategoryName);
             tvDescription = itemView.findViewById(R.id.tvCategoryDescription);
             btnDelete = itemView.findViewById(R.id.btnDeleteCategory);
+            btnEdit = itemView.findViewById(R.id.btnEditCategory);
         }
     }
 } 

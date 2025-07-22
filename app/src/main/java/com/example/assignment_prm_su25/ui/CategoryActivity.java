@@ -14,6 +14,9 @@ import com.example.assignment_prm_su25.R;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
 import com.example.assignment_prm_su25.model.Category;
 import java.util.List;
+import android.app.AlertDialog;
+import android.view.LayoutInflater;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class CategoryActivity extends AppCompatActivity {
     private EditText edtCategoryName, edtCategoryDescription;
@@ -22,18 +25,15 @@ public class CategoryActivity extends AppCompatActivity {
     private UserDatabaseHelper dbHelper;
     private CategoryAdapter adapter;
     private Category selectedCategory = null;
+    private FloatingActionButton fabAddCategory;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category);
 
-        edtCategoryName = findViewById(R.id.edtCategoryName);
-        edtCategoryDescription = findViewById(R.id.edtCategoryDescription);
-        btnAddCategory = findViewById(R.id.btnAddCategory);
-        btnUpdateCategory = findViewById(R.id.btnUpdateCategory);
-        btnClearCategory = findViewById(R.id.btnClearCategory);
         rvCategoryList = findViewById(R.id.rvCategoryList);
+        fabAddCategory = findViewById(R.id.fabAddCategory);
         dbHelper = UserDatabaseHelper.getInstance(this);
 
         rvCategoryList.setLayoutManager(new LinearLayoutManager(this));
@@ -42,57 +42,10 @@ public class CategoryActivity extends AppCompatActivity {
 
         loadCategories();
 
-        btnAddCategory.setOnClickListener(new View.OnClickListener() {
+        fabAddCategory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String name = edtCategoryName.getText().toString().trim();
-                String desc = edtCategoryDescription.getText().toString().trim();
-                if (TextUtils.isEmpty(name)) {
-                    Toast.makeText(CategoryActivity.this, "Vui lòng nhập tên danh mục", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                Category category = new Category(name, desc);
-                boolean success = dbHelper.addCategory(category);
-                if (success) {
-                    Toast.makeText(CategoryActivity.this, "Thêm thành công", Toast.LENGTH_SHORT).show();
-                    clearInput();
-                    loadCategories();
-                } else {
-                    Toast.makeText(CategoryActivity.this, "Thêm thất bại", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        btnUpdateCategory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (selectedCategory == null) {
-                    Toast.makeText(CategoryActivity.this, "Chọn danh mục để cập nhật", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                String name = edtCategoryName.getText().toString().trim();
-                String desc = edtCategoryDescription.getText().toString().trim();
-                if (TextUtils.isEmpty(name)) {
-                    Toast.makeText(CategoryActivity.this, "Vui lòng nhập tên danh mục", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                selectedCategory.setName(name);
-                selectedCategory.setDescription(desc);
-                boolean success = dbHelper.updateCategory(selectedCategory);
-                if (success) {
-                    Toast.makeText(CategoryActivity.this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
-                    clearInput();
-                    loadCategories();
-                } else {
-                    Toast.makeText(CategoryActivity.this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        btnClearCategory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clearInput();
+                showCategoryDialog(null);
             }
         });
     }
@@ -103,25 +56,61 @@ public class CategoryActivity extends AppCompatActivity {
         adapter.setOnItemClickListener(new CategoryAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Category category) {
-                selectedCategory = category;
-                edtCategoryName.setText(category.getName());
-                edtCategoryDescription.setText(category.getDescription());
+                // Không làm gì khi click item
             }
-
             @Override
             public void onDeleteClick(Category category) {
                 dbHelper.deleteCategory(category.getId());
                 loadCategories();
-                if (selectedCategory != null && selectedCategory.getId() == category.getId()) {
-                    clearInput();
-                }
+            }
+            @Override
+            public void onEditClick(Category category) {
+                showCategoryDialog(category);
             }
         });
     }
 
-    private void clearInput() {
-        edtCategoryName.setText("");
-        edtCategoryDescription.setText("");
-        selectedCategory = null;
+    private void showCategoryDialog(Category categoryToEdit) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(categoryToEdit == null ? "Thêm danh mục" : "Sửa danh mục");
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_category, null);
+        EditText edtName = dialogView.findViewById(R.id.edtDialogCategoryName);
+        EditText edtDesc = dialogView.findViewById(R.id.edtDialogCategoryDescription);
+        if (categoryToEdit != null) {
+            edtName.setText(categoryToEdit.getName());
+            edtDesc.setText(categoryToEdit.getDescription());
+        }
+        builder.setView(dialogView);
+        builder.setPositiveButton(categoryToEdit == null ? "Thêm" : "Cập nhật", (dialog, which) -> {
+            String name = edtName.getText().toString().trim();
+            String desc = edtDesc.getText().toString().trim();
+            if (TextUtils.isEmpty(name)) {
+                Toast.makeText(this, "Vui lòng nhập tên danh mục", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (categoryToEdit == null) {
+                // Thêm mới
+                Category category = new Category(name, desc);
+                boolean success = dbHelper.addCategory(category);
+                if (success) {
+                    Toast.makeText(this, "Thêm thành công", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Thêm thất bại", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                // Sửa
+                categoryToEdit.setName(name);
+                categoryToEdit.setDescription(desc);
+                boolean success = dbHelper.updateCategory(categoryToEdit);
+                if (success) {
+                    Toast.makeText(this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Cập nhật thất bại", Toast.LENGTH_SHORT).show();
+                }
+            }
+            loadCategories();
+        });
+        builder.setNegativeButton("Hủy", null);
+        builder.show();
     }
 } 
