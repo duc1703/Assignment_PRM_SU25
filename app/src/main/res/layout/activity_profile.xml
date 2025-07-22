@@ -222,8 +222,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/ic_notifications"
-                            app:tint="@color/colorPrimary"/>
+                            android:src="@drawable/ic_receipt" app:tint="@color/colorPrimary"/>
 
                         <TextView
                             android:layout_width="0dp"
