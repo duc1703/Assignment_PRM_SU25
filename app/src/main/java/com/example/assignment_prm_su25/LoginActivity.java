@@ -43,6 +43,8 @@ public class LoginActivity extends AppCompatActivity {
         tilPassword = findViewById(R.id.passwordLayout);
         dbHelper = UserDatabaseHelper.getInstance(this);
 
+        // Đảm bảo tài khoản abc@gmail.com luôn là admin
+
         // Load saved login credentials if available
         loadSavedCredentials();
 
@@ -118,16 +120,19 @@ public class LoginActivity extends AppCompatActivity {
         // Use a Handler to simulate network delay and avoid blocking the UI thread
         new Handler().postDelayed(() -> {
             User user = dbHelper.checkUserLogin(email, password);
-            
             // Switch back to the main thread to update the UI
             runOnUiThread(() -> {
                 setLoading(false);
                 if (user != null) {
                     // Save user session to SharedPreferences
                     saveUserSession(user);
-                    
                     showToast("Đăng nhập thành công!");
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    Intent intent;
+                    if (user.getRole() != null && user.getRole().equalsIgnoreCase("admin")) {
+                        intent = new Intent(LoginActivity.this, com.example.assignment_prm_su25.ui.AdminActivity.class);
+                    } else {
+                        intent = new Intent(LoginActivity.this, MainActivity.class);
+                    }
                     startActivity(intent);
                     finish();
                 } else {

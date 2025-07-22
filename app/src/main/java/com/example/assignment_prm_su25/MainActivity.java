@@ -3,6 +3,7 @@ package com.example.assignment_prm_su25;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import com.example.assignment_prm_su25.model.User;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,6 +13,11 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.app.AlertDialog;
+import com.example.assignment_prm_su25.ui.ProductDetailActivity;
+
+import android.database.sqlite.SQLiteDatabase;
+import android.database.Cursor;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,14 +52,72 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvProducts;
     private ProductAdapter productAdapter;
     private List<Product> productList;
-    private List<Product> filteredProductList;
     private UserDatabaseHelper dbHelper;
+
+    private boolean isAdmin() {
+        SharedPreferences prefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
+        int userId = prefs.getInt("user_id", -1);
+        if (userId != -1) {
+            User user = dbHelper.getUserById(userId);
+            return user != null && "admin".equals(user.getRole());
+        }
+        return false;
+    }
+    private List<Product> filteredProductList;
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
     private ChipGroup chipGroup;
     private SearchView searchView;
     private TextView cartBadge;
     private int userId;
+    
+    private void loadProducts() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        productList = new ArrayList<>();
+        
+        String[] projection = {
+            UserDatabaseHelper.COLUMN_PRODUCT_ID,
+            UserDatabaseHelper.COLUMN_PRODUCT_NAME,
+            UserDatabaseHelper.COLUMN_PRODUCT_DESCRIPTION,
+            UserDatabaseHelper.COLUMN_PRODUCT_PRICE,
+            UserDatabaseHelper.COLUMN_PRODUCT_IMAGE,
+            UserDatabaseHelper.COLUMN_PRODUCT_CATEGORY_ID,
+            UserDatabaseHelper.COLUMN_PRODUCT_RATE
+        };
+
+        try (Cursor cursor = db.query(
+            UserDatabaseHelper.TABLE_PRODUCT,
+            projection,
+            null,
+            null,
+            null,
+            null,
+            null)) {
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Product product = new Product();
+                    product.setId(cursor.getInt(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_ID)));
+                    product.setName(cursor.getString(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_NAME)));
+                    product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_DESCRIPTION)));
+                    product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_PRICE)));
+                    product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_IMAGE)));
+                    product.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_CATEGORY_ID)));
+                    product.setRating(cursor.getInt(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_RATE)));
+                    productList.add(product);
+                } while (cursor.moveToNext());
+            }
+        }
+
+        // Update RecyclerView
+        if (productAdapter == null) {
+            productAdapter = new ProductAdapter(this, productList);
+            rvProducts.setAdapter(productAdapter);
+            rvProducts.setLayoutManager(new GridLayoutManager(this, 2));
+        } else {
+            productAdapter.updateProducts(productList);
+        }
+    }
     
     // Filter components
     private AutoCompleteTextView brandFilter;
@@ -96,6 +160,50 @@ public class MainActivity extends AppCompatActivity {
         productList = new ArrayList<>();
         filteredProductList = new ArrayList<>();
         productAdapter = new ProductAdapter(this, filteredProductList);
+        
+        productAdapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Product product) {
+                // Chuyển đến trang chi tiết sản phẩm
+                Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
+                intent.putExtra("product_id", product.getId());
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            }
+
+            @Override
+            public void onAddToCartClick(Product product) {
+                if (userId != -1) {
+                    boolean success = dbHelper.addToCart(userId, product.getId(), 1);
+                    if (success) {
+                        Toast.makeText(MainActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                        updateCartBadge();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Không thể thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "Vui lòng đăng nhập để mua hàng", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onDeleteClick(Product product) {
+                // Chỉ admin mới có thể xóa sản phẩm
+                if (isAdmin()) {
+                    new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Xác nhận xóa")
+                        .setMessage("Bạn có chắc chắn muốn xóa sản phẩm này?")
+                        .setPositiveButton("Xóa", (dialog, which) -> {
+                            if (dbHelper.deleteProduct(product.getId())) {
+                                Toast.makeText(MainActivity.this, "Đã xóa sản phẩm", Toast.LENGTH_SHORT).show();
+                                loadProducts(); // Refresh danh sách
+                            }
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
+                }
+            }
+        });
 
         // Set up RecyclerView
         rvProducts.setLayoutManager(new GridLayoutManager(this, 2));

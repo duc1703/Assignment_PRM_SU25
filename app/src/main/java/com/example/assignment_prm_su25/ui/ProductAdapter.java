@@ -19,6 +19,8 @@ import com.example.assignment_prm_su25.model.Product;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import com.example.assignment_prm_su25.MainActivity;
+
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
 
     private Context context;
@@ -38,6 +40,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     public ProductAdapter(Context context, List<Product> productList) {
         this.context = context;
         this.productList = productList;
+    }
+
+    public void updateProducts(List<Product> productList) {
+        setProducts(productList);
     }
 
     public void setProducts(List<Product> productList) {
@@ -98,6 +104,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onItemClick(product);
+                if (context instanceof MainActivity) {
+                    ((MainActivity)context).overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+                }
             }
         });
         // Đặt lại sự kiện click cho nút thêm vào giỏ
