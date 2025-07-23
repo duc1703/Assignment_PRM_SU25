@@ -276,14 +276,14 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     // Cập nhật thông tin user
     // Validate email format
     private boolean isValidEmail(String email) {
-        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
-        return email.matches(emailPattern);
+        // Chỉ cần có ký tự '@' là hợp lệ
+        return email != null && email.contains("@");
     }
 
     // Validate password strength
     private boolean isValidPassword(String password) {
-        // Kiểm tra mật khẩu đơn giản hơn: ít nhất 6 ký tự
-        return password != null && password.length() >= 6;
+        // Chỉ cần mật khẩu khác rỗng
+        return password != null && !password.trim().isEmpty();
     }
 
     public boolean updateUser(User user) {
@@ -297,18 +297,24 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         if (user.getPassword() == null || !isValidPassword(user.getPassword())) {
             return false;
         }
-        if (user.getRole() == null || (!user.getRole().equals("admin") && !user.getRole().equals("user"))) {
+        if (user.getRole() == null) {
             return false;
         }
-        
+        // Chấp nhận "admin" hoặc "user" không phân biệt hoa thường
+        String roleLower = user.getRole().trim().toLowerCase();
+        if (!roleLower.equals("admin") && !roleLower.equals("user")) {
+            return false;
+        }
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, user.getName().trim());
         values.put(COLUMN_EMAIL, user.getEmail().trim());
         values.put(COLUMN_PASSWORD, user.getPassword());
-        values.put(COLUMN_ROLE, user.getRole());
+        values.put(COLUMN_ROLE, roleLower);
         values.put(COLUMN_PHONE, user.getPhone() != null ? user.getPhone().trim() : "");
         values.put(COLUMN_ADDRESS, user.getAddress() != null ? user.getAddress().trim() : "");
+        
         
         int result = db.update(TABLE_USER, values, COLUMN_ID + "=?", new String[]{String.valueOf(user.getId())});
         db.close();
