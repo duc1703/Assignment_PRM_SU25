@@ -25,7 +25,8 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView tvUserName, tvUserEmail;
     private TextInputEditText etUserName, etUserEmail, etUserPhone, etUserAddress;
     private TextInputEditText etCurrentPassword, etNewPassword, etConfirmPassword;
-    private MaterialButton btnSaveProfile;
+    private MaterialButton btnSaveProfile, btnChangePassword;
+    private LinearLayout layoutPasswordFields;
     private LinearLayout layoutMyOrders, layoutLogout;
     private SharedPreferences sharedPreferences;
     private UserDatabaseHelper dbHelper;
@@ -53,6 +54,8 @@ public class ProfileActivity extends AppCompatActivity {
         etNewPassword = findViewById(R.id.etNewPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnSaveProfile = findViewById(R.id.btnSaveProfile);
+        btnChangePassword = findViewById(R.id.btnChangePassword);
+        layoutPasswordFields = findViewById(R.id.layoutPasswordFields);
         layoutMyOrders = findViewById(R.id.layoutMyOrders);
         layoutLogout = findViewById(R.id.layoutLogout);
         
@@ -111,6 +114,8 @@ public class ProfileActivity extends AppCompatActivity {
     private void setupClickListeners() {
         btnSaveProfile.setOnClickListener(v -> saveUserProfile());
         
+        btnChangePassword.setOnClickListener(v -> togglePasswordFields());
+        
         layoutMyOrders.setOnClickListener(v -> {
             Toast.makeText(this, "Chức năng đang phát triển", Toast.LENGTH_SHORT).show();
         });
@@ -118,14 +123,45 @@ public class ProfileActivity extends AppCompatActivity {
         layoutLogout.setOnClickListener(v -> logout());
     }
     
+    private void togglePasswordFields() {
+        if (layoutPasswordFields.getVisibility() == View.VISIBLE) {
+            layoutPasswordFields.setVisibility(View.GONE);
+            btnChangePassword.setText("Đổi mật khẩu");
+            // Clear password fields when hiding
+            etCurrentPassword.setText("");
+            etNewPassword.setText("");
+            etConfirmPassword.setText("");
+        } else {
+            layoutPasswordFields.setVisibility(View.VISIBLE);
+            btnChangePassword.setText("Hủy đổi mật khẩu");
+            // Focus on current password field when showing
+            etCurrentPassword.requestFocus();
+        }
+    }
+    
     private void saveUserProfile() {
         String name = etUserName.getText().toString().trim();
         String email = etUserEmail.getText().toString().trim();
         String phone = etUserPhone.getText().toString().trim();
         String address = etUserAddress.getText().toString().trim();
-        String currentPassword = etCurrentPassword.getText().toString().trim();
-        String newPassword = etNewPassword.getText().toString().trim();
-        String confirmPassword = etConfirmPassword.getText().toString().trim();
+        
+        // Only get password fields if they are visible
+        String currentPassword = "";
+        String newPassword = "";
+        String confirmPassword = "";
+        
+        if (layoutPasswordFields.getVisibility() == View.VISIBLE) {
+            currentPassword = etCurrentPassword.getText().toString().trim();
+            newPassword = etNewPassword.getText().toString().trim();
+            confirmPassword = etConfirmPassword.getText().toString().trim();
+            
+            // If password fields are visible, current password is required
+            if (currentPassword.isEmpty()) {
+                etCurrentPassword.setError("Vui lòng nhập mật khẩu hiện tại");
+                etCurrentPassword.requestFocus();
+                return;
+            }
+        }
         
         if (name.isEmpty()) {
             etUserName.setError("Vui lòng nhập tên");
@@ -147,15 +183,16 @@ public class ProfileActivity extends AppCompatActivity {
         
         // Update user in database if currentUser exists
         if (currentUser != null) {
-            // Kiểm tra mật khẩu hiện tại
-            if (!currentPassword.isEmpty()) {
+            // Only validate passwords if password fields are visible
+            if (layoutPasswordFields.getVisibility() == View.VISIBLE) {
+                // Verify current password
                 if (!currentUser.getPassword().equals(currentPassword)) {
                     etCurrentPassword.setError("Mật khẩu hiện tại không chính xác!");
                     etCurrentPassword.requestFocus();
                     return;
                 }
                 
-                // Kiểm tra mật khẩu mới
+                // Validate new password
                 if (newPassword.isEmpty()) {
                     etNewPassword.setError("Vui lòng nhập mật khẩu mới");
                     etNewPassword.requestFocus();
@@ -174,8 +211,15 @@ public class ProfileActivity extends AppCompatActivity {
                     return;
                 }
                 
-                // Cập nhật mật khẩu mới
+                // Update to new password
                 currentUser.setPassword(newPassword);
+                
+                // Clear and hide password fields after successful update
+                etCurrentPassword.setText("");
+                etNewPassword.setText("");
+                etConfirmPassword.setText("");
+                layoutPasswordFields.setVisibility(View.GONE);
+                btnChangePassword.setText("Đổi mật khẩu");
             }
             
             // Cập nhật thông tin cá nhân
