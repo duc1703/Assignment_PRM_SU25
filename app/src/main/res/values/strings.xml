@@ -119,6 +119,7 @@
     <string name="edit_profile">Chỉnh sửa thông tin</string>
     <string name="save_changes">Lưu thay đổi</string>
     <string name="profile_updated">Cập nhật thông tin thành công</string>
+    <string name="change_password">Đổi mật khẩu</string>
     <string name="user_name">Tên người dùng</string>
     <string name="user_email">Email</string>
     <string name="user_phone">Số điện thoại</string>
