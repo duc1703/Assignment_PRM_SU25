@@ -3,7 +3,7 @@ package com.example.assignment_prm_su25;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import com.example.assignment_prm_su25.model.User;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,11 +13,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.app.AlertDialog;
-import com.example.assignment_prm_su25.ui.ProductDetailActivity;
-
-import android.database.sqlite.SQLiteDatabase;
-import android.database.Cursor;
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,9 +23,9 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.assignment_prm_su25.model.Product;
 import com.example.assignment_prm_su25.ui.CartActivity;
-import com.example.assignment_prm_su25.ui.ImageSliderAdapter;
+import com.example.assignment_prm_su25.Adapter.ImageSliderAdapter;
 import com.example.assignment_prm_su25.ui.NotificationActivity;
-import com.example.assignment_prm_su25.ui.ProductAdapter;
+import com.example.assignment_prm_su25.Adapter.ProductAdapter;
 import com.example.assignment_prm_su25.ui.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
@@ -39,10 +34,10 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.android.material.button.MaterialButton;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
+import com.example.assignment_prm_su25.model.Category;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,72 +47,14 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvProducts;
     private ProductAdapter productAdapter;
     private List<Product> productList;
-    private UserDatabaseHelper dbHelper;
-
-    private boolean isAdmin() {
-        SharedPreferences prefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
-        int userId = prefs.getInt("user_id", -1);
-        if (userId != -1) {
-            User user = dbHelper.getUserById(userId);
-            return user != null && "admin".equals(user.getRole());
-        }
-        return false;
-    }
     private List<Product> filteredProductList;
+    private UserDatabaseHelper dbHelper;
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
     private ChipGroup chipGroup;
     private SearchView searchView;
     private TextView cartBadge;
     private int userId;
-    
-    private void loadProducts() {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        productList = new ArrayList<>();
-        
-        String[] projection = {
-            UserDatabaseHelper.COLUMN_PRODUCT_ID,
-            UserDatabaseHelper.COLUMN_PRODUCT_NAME,
-            UserDatabaseHelper.COLUMN_PRODUCT_DESCRIPTION,
-            UserDatabaseHelper.COLUMN_PRODUCT_PRICE,
-            UserDatabaseHelper.COLUMN_PRODUCT_IMAGE,
-            UserDatabaseHelper.COLUMN_PRODUCT_CATEGORY_ID,
-            UserDatabaseHelper.COLUMN_PRODUCT_RATE
-        };
-
-        try (Cursor cursor = db.query(
-            UserDatabaseHelper.TABLE_PRODUCT,
-            projection,
-            null,
-            null,
-            null,
-            null,
-            null)) {
-
-            if (cursor.moveToFirst()) {
-                do {
-                    Product product = new Product();
-                    product.setId(cursor.getInt(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_ID)));
-                    product.setName(cursor.getString(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_NAME)));
-                    product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_DESCRIPTION)));
-                    product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_PRICE)));
-                    product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_IMAGE)));
-                    product.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_CATEGORY_ID)));
-                    product.setRating(cursor.getInt(cursor.getColumnIndexOrThrow(UserDatabaseHelper.COLUMN_PRODUCT_RATE)));
-                    productList.add(product);
-                } while (cursor.moveToNext());
-            }
-        }
-
-        // Update RecyclerView
-        if (productAdapter == null) {
-            productAdapter = new ProductAdapter(this, productList);
-            rvProducts.setAdapter(productAdapter);
-            rvProducts.setLayoutManager(new GridLayoutManager(this, 2));
-        } else {
-            productAdapter.updateProducts(productList);
-        }
-    }
     
     // Filter components
     private AutoCompleteTextView brandFilter;
@@ -160,50 +97,6 @@ public class MainActivity extends AppCompatActivity {
         productList = new ArrayList<>();
         filteredProductList = new ArrayList<>();
         productAdapter = new ProductAdapter(this, filteredProductList);
-        
-        productAdapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(Product product) {
-                // Chuyển đến trang chi tiết sản phẩm
-                Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
-                intent.putExtra("product_id", product.getId());
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
-            }
-
-            @Override
-            public void onAddToCartClick(Product product) {
-                if (userId != -1) {
-                    boolean success = dbHelper.addToCart(userId, product.getId(), 1);
-                    if (success) {
-                        Toast.makeText(MainActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
-                        updateCartBadge();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Không thể thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(MainActivity.this, "Vui lòng đăng nhập để mua hàng", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onDeleteClick(Product product) {
-                // Chỉ admin mới có thể xóa sản phẩm
-                if (isAdmin()) {
-                    new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("Xác nhận xóa")
-                        .setMessage("Bạn có chắc chắn muốn xóa sản phẩm này?")
-                        .setPositiveButton("Xóa", (dialog, which) -> {
-                            if (dbHelper.deleteProduct(product.getId())) {
-                                Toast.makeText(MainActivity.this, "Đã xóa sản phẩm", Toast.LENGTH_SHORT).show();
-                                loadProducts(); // Refresh danh sách
-                            }
-                        })
-                        .setNegativeButton("Hủy", null)
-                        .show();
-                }
-            }
-        });
 
         // Set up RecyclerView
         rvProducts.setLayoutManager(new GridLayoutManager(this, 2));
@@ -286,33 +179,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void populateProducts() {
-        // Add sample shoe products with detailed information
-        Product product1 = new Product(1, "Nike Air Max 270", "Giày thể thao nam thoải mái, phong cách trẻ trung", 2899000, "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/awjogtdnqxniqqk0wpgf/air-max-270-mens-shoes-KkLcGR.png", 4.8f, 1, "Nike", "Giày thể thao", "42", "Đen/Trắng", 25, 10.0, true, "Mesh/Synthetic", "Nam");
-        productList.add(product1);
-        
-        Product product2 = new Product(2, "Adidas Ultraboost 22", "Giày chạy bộ nữ với công nghệ Boost", 3299000, "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/fbaf991a78bc4896a3e9ad7800abcec6_9366/Ultraboost_22_Shoes_Black_GZ0127_01_standard.jpg", 4.9f, 2, "Adidas", "Giày chạy bộ", "38", "Đen", 15, 15.0, true, "Primeknit", "Nữ");
-        productList.add(product2);
-        
-        Product product3 = new Product(3, "Converse Chuck Taylor All Star", "Giày sneaker cổ điển, phù hợp mọi lứa tuổi", 1599000, "https://www.converse.com/dw/image/v2/BCZC_PRD/on/demandware.static/-/Sites-cnv-master-catalog/default/dw2f8b4f0d/images/a_107/M7650_A_107X1.jpg", 4.6f, 3, "Converse", "Sneaker", "40", "Trắng", 30, 0.0, true, "Canvas", "Unisex");
-        productList.add(product3);
-        
-        Product product4 = new Product(4, "Vans Old Skool", "Giày skateboard trẻ trung, năng động", 1899000, "https://images.vans.com/is/image/Vans/D3HY28-HERO?$583x583$", 4.7f, 1, "Vans", "Skateboard", "41", "Đen/Trắng", 20, 5.0, true, "Suede/Canvas", "Nam");
-        productList.add(product4);
-        
-        Product product5 = new Product(5, "Puma RS-X", "Giày thể thao retro với thiết kế độc đáo", 2199000, "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/374393/01/sv01/fnd/PNA/fmt/png/RS-X-Reinvention-Sneakers", 4.5f, 4, "Puma", "Lifestyle", "43", "Trắng/Xanh", 18, 20.0, true, "Synthetic/Mesh", "Nam");
-        productList.add(product5);
-        
-        Product product6 = new Product(6, "New Balance 574", "Giày lifestyle thoải mái cho mọi hoạt động", 2499000, "https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i?$dw_detail_main_lg$&bgc=f1f1f1&layer=1&bgcolor=f1f1f1&blendMode=mult&scale=10&wid=1600&hei=1600", 4.4f, 1, "New Balance", "Lifestyle", "39", "Xám", 22, 0.0, true, "Suede/Mesh", "Nữ");
-        productList.add(product6);
-        
-        // Add more products for variety
-        Product product7 = new Product(7, "Jordan Air Jordan 1", "Giày bóng rổ kinh điển với thiết kế iconic", 3599000, "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-Prsm5V.png", 4.9f, 5, "Jordan", "Bóng rổ", "44", "Đỏ/Đen/Trắng", 12, 0.0, true, "Leather", "Nam");
-        productList.add(product7);
-        
-        Product product8 = new Product(8, "Adidas Stan Smith", "Giày tennis cổ điển, phong cách tối giản", 1899000, "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/ee8b7b1d15b54d4b9b4aab4500f8b5e0_9366/Stan_Smith_Shoes_White_M20324_01_standard.jpg", 4.7f, 6, "Adidas", "Tennis", "37", "Trắng/Xanh", 35, 10.0, true, "Leather", "Unisex");
-        productList.add(product8);
-        
-        // Initially show all products
+        if (dbHelper.getAllCategories().isEmpty()) {
+            dbHelper.addCategory(new Category("Giày thể thao", "Giày thể thao các loại"));
+            dbHelper.addCategory(new Category("Giày chạy bộ", "Giày chuyên dụng cho chạy bộ"));
+            dbHelper.addCategory(new Category("Sneaker", "Giày sneaker thời trang"));
+            dbHelper.addCategory(new Category("Lifestyle", "Giày phong cách sống"));
+            dbHelper.addCategory(new Category("Bóng rổ", "Giày bóng rổ"));
+            dbHelper.addCategory(new Category("Tennis", "Giày tennis"));
+            Log.d("MainActivity", "Added sample categories to DB.");
+        }
+        if (dbHelper.getAllProducts().isEmpty()) { // Chỉ thêm nếu DB đang trống
+            Log.d("MainActivity", "Adding sample products to DB...");
+            dbHelper.addProduct(new Product(1, "Nike Air Max 270", "Giày thể thao nam thoải mái, phong cách trẻ trung", 2899000, "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/awjogtdnqxniqqk0wpgf/air-max-270-mens-shoes-KkLcGR.png", 4.8f, 1, "Nike", "Giày thể thao", "42", "Đen/Trắng", 25, 10.0, true, "Mesh/Synthetic", "Nam"));
+            dbHelper.addProduct(new Product(2, "Adidas Ultraboost 22", "Giày chạy bộ nữ với công nghệ Boost", 3299000, "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/fbaf991a78bc4896a3e9ad7800abcec6_9366/Ultraboost_22_Shoes_Black_GZ0127_01_standard.jpg", 4.9f, 2, "Adidas", "Giày chạy bộ", "38", "Đen", 15, 15.0, true, "Primeknit", "Nữ"));
+            dbHelper.addProduct(new Product(3, "Converse Chuck Taylor All Star", "Giày sneaker cổ điển, phù hợp mọi lứa tuổi", 1599000, "https://www.converse.com/dw/image/v2/BCZC_PRD/on/demandware.static/-/Sites-cnv-master-catalog/default/dw2f8b4f0d/images/a_107/M7650_A_107X1.jpg", 4.6f, 3, "Converse", "Sneaker", "40", "Trắng", 30, 0.0, true, "Canvas", "Unisex"));
+            dbHelper.addProduct(new Product(4, "Vans Old Skool", "Giày skateboard trẻ trung, năng động", 1899000, "https://images.vans.com/is/image/Vans/D3HY28-HERO?$583x583$", 4.7f, 1, "Vans", "Skateboard", "41", "Đen/Trắng", 20, 5.0, true, "Suede/Canvas", "Nam"));
+            dbHelper.addProduct(new Product(5, "Puma RS-X", "Giày thể thao retro với thiết kế độc đáo", 2199000, "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/374393/01/sv01/fnd/PNA/fmt/png/RS-X-Reinvention-Sneakers", 4.5f, 4, "Puma", "Lifestyle", "43", "Trắng/Xanh", 18, 20.0, true, "Synthetic/Mesh", "Nam"));
+            dbHelper.addProduct(new Product(6, "New Balance 574", "Giày lifestyle thoải mái cho mọi hoạt động", 2499000, "https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i?$dw_detail_main_lg$&bgc=f1f1f1&layer=1&bgcolor=f1f1f1&blendMode=mult&scale=10&wid=1600&hei=1600", 4.4f, 1, "New Balance", "Lifestyle", "39", "Xám", 22, 0.0, true, "Suede/Mesh", "Nữ"));
+            dbHelper.addProduct(new Product(7, "Jordan Air Jordan 1", "Giày bóng rổ kinh điển với thiết kế iconic", 3599000, "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-Prsm5V.png", 4.9f, 5, "Jordan", "Bóng rổ", "44", "Đỏ/Đen/Trắng", 12, 0.0, true, "Leather", "Nam"));
+            dbHelper.addProduct(new Product(8, "Adidas Stan Smith", "Giày tennis cổ điển, phong cách tối giản", 1899000, "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/ee8b7b1d15b54d4b9b4aab4500f8b5e0_9366/Stan_Smith_Shoes_White_M20324_01_standard.jpg", 4.7f, 6, "Adidas", "Tennis", "37", "Trắng/Xanh", 35, 10.0, true, "Leather", "Unisex"));
+            Log.d("MainActivity", "Sample products added to DB.");
+        }
+        productList.clear();
+        productList.addAll(dbHelper.getAllProducts()); // Lấy TẤT CẢ sản phẩm từ DB
+        Log.d("MainActivity", "Loaded " + productList.size() + " products from DB.");
+
         filteredProductList.clear();
         filteredProductList.addAll(productList);
         productAdapter.notifyDataSetChanged();

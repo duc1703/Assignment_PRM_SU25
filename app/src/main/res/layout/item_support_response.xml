@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tvResponseSender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Admin"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/colorPrimary"/>
+
+        <TextView
+            android:id="@+id/tvResponseTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="22/07/2025 10:35"
+            android:textSize="11sp"
+            android:textColor="@color/textSecondary"
+            android:layout_marginTop="2dp"/>
+
+        <TextView
+            android:id="@+id/tvResponseContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cảm ơn bạn đã liên hệ. Chúng tôi đã nhận được thông tin và sẽ xử lý vấn đề của bạn."
+            android:textSize="14sp"
+            android:textColor="@color/textPrimary"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

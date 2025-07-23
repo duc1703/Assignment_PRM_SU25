@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.assignment_prm_su25.Adapter.CategoryAdapter;
 import com.example.assignment_prm_su25.R;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
 import com.example.assignment_prm_su25.model.Category;

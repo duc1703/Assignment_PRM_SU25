@@ -1,4 +1,4 @@
-package com.example.assignment_prm_su25.ui;
+package com.example.assignment_prm_su25.Adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
