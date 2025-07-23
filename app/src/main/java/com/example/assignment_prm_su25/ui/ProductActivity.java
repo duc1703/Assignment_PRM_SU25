@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.assignment_prm_su25.Adapter.ProductAdapter;
+import com.example.assignment_prm_su25.Adapter.ProductManageAdapter;
 import com.example.assignment_prm_su25.R;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
 import com.example.assignment_prm_su25.model.Category;
@@ -30,7 +31,7 @@ public class ProductActivity extends AppCompatActivity {
     private Button btnAddProduct, btnUpdateProduct, btnClearProduct;
     private RecyclerView rvProductList;
     private UserDatabaseHelper dbHelper;
-    private ProductAdapter adapter;
+    private ProductManageAdapter adapter;
     private Product selectedProduct = null;
     private List<Category> categoryList = new ArrayList<>();
     private ArrayAdapter<String> categoryAdapter;
@@ -54,7 +55,7 @@ public class ProductActivity extends AppCompatActivity {
         dbHelper = UserDatabaseHelper.getInstance(this);
 
         rvProductList.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ProductAdapter(this, new ArrayList<>());
+        adapter = new ProductManageAdapter(this, new ArrayList<>());
         rvProductList.setAdapter(adapter);
 
         loadCategories();
@@ -153,7 +154,7 @@ public class ProductActivity extends AppCompatActivity {
     private void loadProducts() {
         List<Product> products = dbHelper.getAllProducts();
         adapter.setProducts(products);
-        adapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
+        adapter.setOnItemClickListener(new ProductManageAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Product product) {
                 selectedProduct = product;

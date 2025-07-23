@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.example.assignment_prm_su25.MainActivity;
 
-public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
+public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdapter.ProductManageViewHolder> {
 
     private Context context;
     private List<Product> productList;
@@ -37,7 +37,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         this.listener = listener;
     }
 
-    public ProductAdapter(Context context, List<Product> productList) {
+    public ProductManageAdapter(Context context, List<Product> productList) {
         this.context = context;
         this.productList = productList;
     }
@@ -53,13 +53,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
     @NonNull
     @Override
-    public ProductViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_product, parent, false);
-        return new ProductViewHolder(view);
+    public ProductManageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.item_product_manage, parent, false);
+        return new ProductManageViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ProductManageViewHolder holder, int position) {
         Product product = productList.get(position);
         // Set basic product info
         holder.tvProductName.setText(product.getName());
@@ -91,14 +91,14 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         return productList.size();
     }
 
-    public static class ProductViewHolder extends RecyclerView.ViewHolder {
+    public static class ProductManageViewHolder extends RecyclerView.ViewHolder {
         ImageView imgProduct;
         TextView tvProductName, tvProductDescription, tvProductPrice, tvOriginalPrice;
         TextView tvBrand, tvSizeColor, tvDiscount, tvStock;
         RatingBar ratingBar;
         View btnAddToCart;
 
-        public ProductViewHolder(@NonNull View itemView) {
+        public ProductManageViewHolder(@NonNull View itemView) {
             super(itemView);
             imgProduct = itemView.findViewById(R.id.imgProduct);
             tvProductName = itemView.findViewById(R.id.tvProductName);

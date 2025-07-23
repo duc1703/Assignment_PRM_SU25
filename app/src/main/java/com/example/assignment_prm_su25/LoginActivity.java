@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.assignment_prm_su25.ui.ForgotPasswordActivity;
+import com.example.assignment_prm_su25.ui.ProductActivity;
 import com.example.assignment_prm_su25.ui.RegisterActivity;
 import com.example.assignment_prm_su25.view.LoadingButton;
 import com.google.android.material.textfield.TextInputLayout;
