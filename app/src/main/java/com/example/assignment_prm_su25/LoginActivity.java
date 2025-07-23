@@ -13,9 +13,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.assignment_prm_su25.ui.CategoryActivity;
 import com.example.assignment_prm_su25.ui.ForgotPasswordActivity;
-import com.example.assignment_prm_su25.ui.ProductActivity;
 import com.example.assignment_prm_su25.ui.RegisterActivity;
 import com.example.assignment_prm_su25.view.LoadingButton;
 import com.google.android.material.textfield.TextInputLayout;
@@ -44,6 +42,8 @@ public class LoginActivity extends AppCompatActivity {
         tilEmail = findViewById(R.id.emailLayout);
         tilPassword = findViewById(R.id.passwordLayout);
         dbHelper = UserDatabaseHelper.getInstance(this);
+
+        // Đảm bảo tài khoản abc@gmail.com luôn là admin
 
         // Load saved login credentials if available
         loadSavedCredentials();
@@ -120,16 +120,19 @@ public class LoginActivity extends AppCompatActivity {
         // Use a Handler to simulate network delay and avoid blocking the UI thread
         new Handler().postDelayed(() -> {
             User user = dbHelper.checkUserLogin(email, password);
-            
             // Switch back to the main thread to update the UI
             runOnUiThread(() -> {
                 setLoading(false);
                 if (user != null) {
                     // Save user session to SharedPreferences
                     saveUserSession(user);
-                    
                     showToast("Đăng nhập thành công!");
-                    Intent intent = new Intent(LoginActivity.this, CategoryActivity.class);
+                    Intent intent;
+                    if (user.getRole() != null && user.getRole().equalsIgnoreCase("admin")) {
+                        intent = new Intent(LoginActivity.this, com.example.assignment_prm_su25.ui.AdminActivity.class);
+                    } else {
+                        intent = new Intent(LoginActivity.this, MainActivity.class);
+                    }
                     startActivity(intent);
                     finish();
                 } else {

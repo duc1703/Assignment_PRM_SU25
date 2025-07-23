@@ -1,3 +1,4 @@
+
 package com.example.assignment_prm_su25.data;
 
 import android.content.Context;
@@ -13,6 +14,92 @@ import com.example.assignment_prm_su25.model.ProductVariant;
 import com.example.assignment_prm_su25.model.Cart;
 
 public class UserDatabaseHelper extends SQLiteOpenHelper {
+    // Đảm bảo tài khoản abc@gmail.com là admin
+    public void addOrUpdateAdminAbcGmail() {
+        String email = "abc@gmail.com";
+        User user = getUserByEmail(email);
+        if (user == null) {
+            // Thêm mới admin nếu chưa có
+            User admin = new User();
+            admin.setName("Admin");
+            admin.setEmail(email);
+            admin.setPassword("admin123"); // Đặt mật khẩu mặc định, có thể thay đổi
+            admin.setRole("admin");
+            admin.setPhone("");
+            admin.setAddress("");
+            addUser(admin);
+        } else if (!"admin".equals(user.getRole())) {
+            // Nếu đã có nhưng chưa phải admin thì cập nhật role
+            user.setRole("admin");
+            updateUser(user);
+        }
+    }
+    // ...existing code...
+    // Lấy toàn bộ user
+    public java.util.List<User> getAllUsers() {
+        java.util.List<User> userList = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_USER, null, null, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                User user = new User();
+                user.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+                user.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+                user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+                user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+                user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE)));
+                user.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+                user.setAddress(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ADDRESS)));
+                userList.add(user);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        db.close();
+        return userList;
+    }
+
+    // Lấy user theo id
+    public User getUserById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        User user = null;
+        Cursor cursor = db.query(TABLE_USER, null, COLUMN_ID + "=?", new String[]{String.valueOf(id)}, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            user = new User();
+            user.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+            user.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+            user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+            user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+            user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE)));
+            user.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+            user.setAddress(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ADDRESS)));
+            cursor.close();
+        }
+        db.close();
+        return user;
+    }
+
+    // Xóa user
+    public boolean deleteUser(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int result = db.delete(TABLE_USER, COLUMN_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
+        return result > 0;
+    }
+
+    // Thêm user (nếu chưa có)
+    public boolean addUser(User user) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, user.getName());
+        values.put(COLUMN_EMAIL, user.getEmail());
+        values.put(COLUMN_PASSWORD, user.getPassword());
+        values.put(COLUMN_ROLE, user.getRole());
+        values.put(COLUMN_PHONE, user.getPhone() != null ? user.getPhone() : "");
+        values.put(COLUMN_ADDRESS, user.getAddress() != null ? user.getAddress() : "");
+        long result = db.insert(TABLE_USER, null, values);
+        db.close();
+        return result != -1;
+    }
     // Brand table
     public static final String TABLE_BRAND = "brand";
     public static final String COLUMN_BRAND_ID = "id";
@@ -122,6 +209,8 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
 
     private UserDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        // Đảm bảo luôn có tài khoản admin abc@gmail.com khi khởi tạo DB helper
+        addOrUpdateAdminAbcGmail();
     }
 
     @Override
@@ -145,23 +234,6 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Thêm user mới (đăng ký)
-    public boolean addUser(User user) {
-        // First, check if the user already exists to provide a clear error message.
-        if (getUserByEmail(user.getEmail()) != null) {
-            return false; // User already exists
-        }
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME, user.getName());
-        values.put(COLUMN_EMAIL, user.getEmail());
-        values.put(COLUMN_PASSWORD, user.getPassword());
-        values.put(COLUMN_ROLE, user.getRole());
-        values.put(COLUMN_PHONE, user.getPhone() != null ? user.getPhone() : "");
-        values.put(COLUMN_ADDRESS, user.getAddress() != null ? user.getAddress() : "");
-        // The UNIQUE constraint on the email column will enforce uniqueness at the DB level.
-        long result = db.insertWithOnConflict(TABLE_USER, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-        return result != -1;
-    }
 
     // Lấy user theo email
     public User getUserByEmail(String email) {
@@ -202,17 +274,45 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Cập nhật thông tin user
+    // Validate email format
+    private boolean isValidEmail(String email) {
+        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+        return email.matches(emailPattern);
+    }
+
+    // Validate password strength
+    private boolean isValidPassword(String password) {
+        // Ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt
+        String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$";
+        return password.matches(passwordPattern);
+    }
+
     public boolean updateUser(User user) {
+        // Validate dữ liệu trước khi cập nhật
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            return false;
+        }
+        if (user.getEmail() == null || !isValidEmail(user.getEmail())) {
+            return false;
+        }
+        if (user.getPassword() == null || !isValidPassword(user.getPassword())) {
+            return false;
+        }
+        if (user.getRole() == null || (!user.getRole().equals("admin") && !user.getRole().equals("user"))) {
+            return false;
+        }
+        
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME, user.getName());
-        values.put(COLUMN_EMAIL, user.getEmail());
+        values.put(COLUMN_NAME, user.getName().trim());
+        values.put(COLUMN_EMAIL, user.getEmail().trim());
         values.put(COLUMN_PASSWORD, user.getPassword());
         values.put(COLUMN_ROLE, user.getRole());
-        values.put(COLUMN_PHONE, user.getPhone() != null ? user.getPhone() : "");
-        values.put(COLUMN_ADDRESS, user.getAddress() != null ? user.getAddress() : "");
+        values.put(COLUMN_PHONE, user.getPhone() != null ? user.getPhone().trim() : "");
+        values.put(COLUMN_ADDRESS, user.getAddress() != null ? user.getAddress().trim() : "");
         
         int result = db.update(TABLE_USER, values, COLUMN_ID + "=?", new String[]{String.valueOf(user.getId())});
+        db.close();
         return result > 0;
     }
 
@@ -285,6 +385,97 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         long result = db.insert(TABLE_PRODUCT, null, values);
         db.close();
         return result != -1;
+    }
+
+    // Tìm kiếm sản phẩm theo tên
+    public java.util.List<Product> searchProducts(String query) {
+        java.util.List<Product> productList = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String searchQuery = "%" + query + "%";
+        Cursor cursor = db.query(TABLE_PRODUCT, null, 
+            COLUMN_PRODUCT_NAME + " LIKE ? OR " + COLUMN_PRODUCT_DESCRIPTION + " LIKE ?",
+            new String[]{searchQuery, searchQuery}, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                Product product = new Product();
+                product.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_ID)));
+                product.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_NAME)));
+                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_DESCRIPTION)));
+                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_PRICE)));
+                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_IMAGE)));
+                product.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_CATEGORY_ID)));
+                product.setRating(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_RATE)));
+                productList.add(product);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        db.close();
+        return productList;
+    }
+
+    // Lọc sản phẩm theo khoảng giá
+    public java.util.List<Product> getProductsByPriceRange(double minPrice, double maxPrice) {
+        java.util.List<Product> productList = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_PRODUCT, null, 
+            COLUMN_PRODUCT_PRICE + " BETWEEN ? AND ?",
+            new String[]{String.valueOf(minPrice), String.valueOf(maxPrice)}, 
+            null, null, COLUMN_PRODUCT_PRICE + " ASC");
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                Product product = new Product();
+                product.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_ID)));
+                product.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_NAME)));
+                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_DESCRIPTION)));
+                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_PRICE)));
+                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_IMAGE)));
+                product.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_CATEGORY_ID)));
+                product.setRating(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_RATE)));
+                productList.add(product);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        db.close();
+        return productList;
+    }
+
+    // Lấy sản phẩm đã sắp xếp
+    public java.util.List<Product> getAllProductsSorted(String sortBy, boolean ascending) {
+        java.util.List<Product> productList = new java.util.ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String orderBy = "";
+        switch (sortBy.toLowerCase()) {
+            case "price":
+                orderBy = COLUMN_PRODUCT_PRICE;
+                break;
+            case "name":
+                orderBy = COLUMN_PRODUCT_NAME;
+                break;
+            case "rating":
+                orderBy = COLUMN_PRODUCT_RATE;
+                break;
+            default:
+                orderBy = COLUMN_PRODUCT_ID;
+        }
+        orderBy += (ascending ? " ASC" : " DESC");
+        
+        Cursor cursor = db.query(TABLE_PRODUCT, null, null, null, null, null, orderBy);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                Product product = new Product();
+                product.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_ID)));
+                product.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_NAME)));
+                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_DESCRIPTION)));
+                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_PRICE)));
+                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_IMAGE)));
+                product.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_CATEGORY_ID)));
+                product.setRating(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_RATE)));
+                productList.add(product);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        db.close();
+        return productList;
     }
 
     public java.util.List<Product> getAllProducts() {
