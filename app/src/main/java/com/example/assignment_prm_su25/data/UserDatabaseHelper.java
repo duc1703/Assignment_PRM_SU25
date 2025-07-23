@@ -23,7 +23,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
             User admin = new User();
             admin.setName("Admin");
             admin.setEmail(email);
-            admin.setPassword("admin123"); // Đặt mật khẩu mặc định, có thể thay đổi
+            admin.setPassword("Admin@123"); // Mật khẩu mới cho admin
             admin.setRole("admin");
             admin.setPhone("");
             admin.setAddress("");
@@ -111,7 +111,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_BRAND_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_BRAND_NAME + " TEXT, " +
                     COLUMN_BRAND_DESCRIPTION + " TEXT)";
-    private static final String DATABASE_NAME = "sneaker_shop.db";
+    private static final String DATABASE_NAME = "sneaker_shop_new.db";
     private static final int DATABASE_VERSION = 31; // Incremented version to ensure cart table is created
 
     private static UserDatabaseHelper instance;
@@ -282,9 +282,8 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
 
     // Validate password strength
     private boolean isValidPassword(String password) {
-        // Ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt
-        String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$";
-        return password.matches(passwordPattern);
+        // Kiểm tra mật khẩu đơn giản hơn: ít nhất 6 ký tự
+        return password != null && password.length() >= 6;
     }
 
     public boolean updateUser(User user) {
