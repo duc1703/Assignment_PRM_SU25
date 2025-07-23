@@ -30,6 +30,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     public interface OnItemClickListener {
         void onItemClick(Product product);
         void onAddToCartClick(Product product);
+        void onViewDetailsClick(Product product);
         void onDeleteClick(Product product);
     }
 
@@ -100,7 +101,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 .load(product.getImageUrl())
                 .placeholder(R.drawable.shimmer_effect)
                 .into(holder.imgProduct);
-        // Đặt lại sự kiện click cho itemView (mở chi tiết)
+        // Set click event for the entire item (opens details with slide animation)
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onItemClick(product);
@@ -109,10 +110,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 }
             }
         });
-        // Đặt lại sự kiện click cho nút thêm vào giỏ
+        // Set click event for the add to cart button
         holder.btnAddToCart.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onAddToCartClick(product);
+            }
+        });
+        // Set click event for the view details button
+        holder.btnViewDetails.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onViewDetailsClick(product);
+                if (context instanceof MainActivity) {
+                    ((MainActivity)context).overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                }
             }
         });
     }
@@ -127,7 +137,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         TextView tvProductName, tvProductDescription, tvProductPrice, tvOriginalPrice;
         TextView tvBrand, tvSizeColor, tvDiscount, tvStock;
         RatingBar ratingBar;
-        View btnAddToCart;
+        View btnAddToCart, btnViewDetails;
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -142,6 +152,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             tvStock = itemView.findViewById(R.id.tvStock);
             ratingBar = itemView.findViewById(R.id.ratingBarItem);
             btnAddToCart = itemView.findViewById(R.id.btnAddToCart);
+            btnViewDetails = itemView.findViewById(R.id.btnViewDetails);
 
         }
     }

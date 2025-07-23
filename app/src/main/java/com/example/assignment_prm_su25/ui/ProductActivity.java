@@ -1,5 +1,6 @@
 package com.example.assignment_prm_su25.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -179,7 +180,16 @@ public class ProductActivity extends AppCompatActivity {
 
             @Override
             public void onAddToCartClick(Product product) {
-                // Not used in this activity
+                // Handle add to cart
+            }
+
+            @Override
+            public void onViewDetailsClick(Product product) {
+                // Open product details screen
+                Intent intent = new Intent(ProductActivity.this, ProductDetailActivity.class);
+                intent.putExtra("product_id", product.getId());
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
     }

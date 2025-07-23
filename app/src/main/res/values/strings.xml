@@ -64,6 +64,10 @@
     <string name="action_notifications">Thông báo</string>
     <string name="action_settings">Cài đặt</string>
     <string name="action_logout">Đăng xuất</string>
+    
+    <!-- Admin -->
+    <string name="add_user">Thêm người dùng</string>
+
     <string name="view_details">Xem chi tiết</string>
     <string name="price">Giá: %s</string>
     <string name="out_of_stock">Hết hàng</string>
@@ -77,6 +81,8 @@
     <string name="checkout">Thanh toán</string>
     <string name="total">Tổng cộng: %s</string>
     <string name="empty_cart">Giỏ hàng trống</string>
+    <string name="empty_cart_message">Giỏ hàng của bạn đang trống</string>
+    <string name="start_shopping">Bắt đầu mua sắm</string>
     
     <!-- Profile -->
     <string name="my_orders">Đơn hàng của tôi</string>

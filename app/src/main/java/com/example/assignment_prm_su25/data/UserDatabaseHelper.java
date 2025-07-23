@@ -610,7 +610,17 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     public java.util.List<Cart> getCartItems(int userId) {
         java.util.List<Cart> cartList = new java.util.ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_CART, null, COLUMN_CART_USER_ID + "=?", new String[]{String.valueOf(userId)}, null, null, null);
+        
+        // Query to get cart items with product details
+        String query = "SELECT c.*, p." + COLUMN_PRODUCT_ID + ", p." + COLUMN_PRODUCT_NAME + 
+                      ", p." + COLUMN_PRODUCT_PRICE + ", p." + COLUMN_PRODUCT_IMAGE + 
+                      ", p." + COLUMN_PRODUCT_DESCRIPTION + ", p." + COLUMN_PRODUCT_CATEGORY_ID + 
+                      ", p." + COLUMN_PRODUCT_RATE + " FROM " + TABLE_CART + " c " +
+                      "INNER JOIN " + TABLE_PRODUCT + " p ON c." + COLUMN_CART_PRODUCT_ID + " = p." + COLUMN_PRODUCT_ID + " " +
+                      "WHERE c." + COLUMN_CART_USER_ID + "=?";
+                      
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+        
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 Cart cart = new Cart();
@@ -618,6 +628,20 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                 cart.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CART_USER_ID)));
                 cart.setProductId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CART_PRODUCT_ID)));
                 cart.setQuantity(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CART_QUANTITY)));
+                
+                // Set product details
+                Product product = new Product();
+                product.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_ID)));
+                product.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_NAME)));
+                product.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_DESCRIPTION)));
+                product.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_PRICE)));
+                product.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_IMAGE)));
+                product.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_CATEGORY_ID)));
+                product.setRating(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_PRODUCT_RATE)));
+                
+                // Set the product in the cart
+                cart.setProduct(product);
+                
                 cartList.add(cart);
             } while (cursor.moveToNext());
             cursor.close();

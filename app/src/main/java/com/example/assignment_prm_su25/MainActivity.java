@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import com.example.assignment_prm_su25.model.User;
+import com.example.assignment_prm_su25.model.Cart;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,8 +18,6 @@ import com.example.assignment_prm_su25.ui.ProductDetailActivity;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.Cursor;
-import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -38,6 +37,7 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
 
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private ProductAdapter productAdapter;
     private List<Product> productList;
     private UserDatabaseHelper dbHelper;
+    private MaterialToolbar toolbar;
 
     private boolean isAdmin() {
         SharedPreferences prefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
@@ -135,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         rvProducts = findViewById(R.id.rvProducts);
@@ -151,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         priceFilter = findViewById(R.id.priceFilter);
         btnSortBy = findViewById(R.id.btnSortBy);
         btnClearFilters = findViewById(R.id.btnClearFilters);
+        
 
         // Get user ID from SharedPreferences
         SharedPreferences prefs = getSharedPreferences("LoginSession", MODE_PRIVATE);
@@ -203,6 +205,15 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 }
             }
+
+            @Override
+            public void onViewDetailsClick(Product product) {
+                // Mở màn hình chi tiết sản phẩm
+                Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
+                intent.putExtra("product_id", product.getId());
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }
         });
 
         // Set up RecyclerView
@@ -244,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, com.example.assignment_prm_su25.ui.ProductDetailActivity.class);
                 intent.putExtra("product_id", product.getId());
                 startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
             }
 
             @Override
@@ -260,6 +272,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDeleteClick(Product product) {
                 // Handle delete click
+            }
+            
+            @Override
+            public void onViewDetailsClick(Product product) {
+                Intent intent = new Intent(MainActivity.this, com.example.assignment_prm_su25.ui.ProductDetailActivity.class);
+                intent.putExtra("product_id", product.getId());
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
     }
@@ -415,15 +435,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateCartBadge() {
-        if (cartBadge != null && userId != -1) {
-            int count = dbHelper.getCartItemCount(userId);
-            if (count > 0) {
-                cartBadge.setText(String.valueOf(count));
-                cartBadge.setVisibility(View.VISIBLE);
-            } else {
-                cartBadge.setVisibility(View.GONE);
-            }
+        if (toolbar == null) {
+            toolbar = findViewById(R.id.toolbar);
+            if (toolbar == null) return;
+            setSupportActionBar(toolbar);
         }
+        
+        new Thread(() -> {
+            try {
+                final int[] itemCount = {0};
+                List<Cart> cartItems = dbHelper.getCartItems(userId);
+                for (Cart cart : cartItems) {
+                    itemCount[0] += cart.getQuantity();
+                }
+                
+                runOnUiThread(() -> {
+                    try {
+                        // Make sure the menu is inflated
+                        toolbar.post(() -> {
+                            Menu menu = toolbar.getMenu();
+                            if (menu == null) return;
+                            
+                            MenuItem cartMenuItem = menu.findItem(R.id.action_cart);
+                            if (cartMenuItem == null) return;
+                            
+                            // Get the badge view from the action layout
+                            View actionView = cartMenuItem.getActionView();
+                            if (actionView != null) {
+                                TextView badgeView = actionView.findViewById(R.id.cart_badge);
+                                if (badgeView != null) {
+                                    if (itemCount[0] > 0) {
+                                        badgeView.setText(String.valueOf(itemCount[0]));
+                                        badgeView.setVisibility(View.VISIBLE);
+                                    } else {
+                                        badgeView.setVisibility(View.GONE);
+                                    }
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void logout() {
