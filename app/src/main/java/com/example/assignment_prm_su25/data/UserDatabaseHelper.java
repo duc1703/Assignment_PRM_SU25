@@ -121,7 +121,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_BRAND_NAME + " TEXT, " +
                     COLUMN_BRAND_DESCRIPTION + " TEXT)";
     private static final String DATABASE_NAME = "sneaker_shop.db";
-    private static final int DATABASE_VERSION = 31; // Incremented version to ensure cart table is created
+    private static final int DATABASE_VERSION = 32; // Incremented version to ensure cart table is created
 
     private static UserDatabaseHelper instance;
 
@@ -390,23 +390,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         return user;
     }
     // Lấy user theo Id
-    public User getUserById(int userId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        User user = null;
-        try (Cursor cursor = db.query(TABLE_USER, null, COLUMN_ID + "=?", new String[]{String.valueOf(userId)}, null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                user = new User();
-                user.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
-                user.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
-                user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
-                user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
-                user.setRole(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE)));
-                user.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
-                user.setAddress(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ADDRESS)));
-            }
-        }
-        return user;
-    }
+
 
     // Kiểm tra đăng nhập (email/username + password)
     public User checkUserLogin(String email, String password) {
