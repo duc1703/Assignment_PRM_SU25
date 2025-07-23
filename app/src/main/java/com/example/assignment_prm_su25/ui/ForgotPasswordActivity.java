@@ -18,6 +18,7 @@ import com.example.assignment_prm_su25.LoginActivity;
 import es.dmoral.toasty.Toasty;
 import java.security.SecureRandom;
 import java.util.Properties;
+import android.os.AsyncTask;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -65,24 +66,20 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                         
                         if (updated) {
                             // Gửi email với mật khẩu mới
-                            boolean emailSent = sendPasswordResetEmail(email, newPassword);
-                            if (emailSent) {
-                                showStatus(" Đã tạo mật khẩu mới và gửi đến email của bạn!");
-                                Toasty.success(ForgotPasswordActivity.this, "Đã tạo mật khẩu mới và gửi đến email của bạn!", Toasty.LENGTH_LONG, true).show();
-                                
-                                // Tự động chuyển về màn hình đăng nhập sau 2 giây
-                                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Intent intent = new Intent(ForgotPasswordActivity.this, LoginActivity.class);
-                                        startActivity(intent);
-                                        finish();
-                                    }
-                                }, 2000);
-                            } else {
-                                showStatus(" Lỗi gửi email. Vui lòng thử lại!");
-                                Toasty.error(ForgotPasswordActivity.this, "Lỗi gửi email!", Toasty.LENGTH_SHORT, true).show();
-                            }
+                            new SendEmailTask(email, newPassword).execute();
+                            // Hiển thị thông báo mật khẩu đã được cập nhật
+                            showStatus(" Đã tạo mật khẩu mới và gửi đến email của bạn. Vui lòng kiểm tra email!");
+                            Toasty.success(ForgotPasswordActivity.this, "Đã tạo mật khẩu mới và gửi đến email của bạn!", Toasty.LENGTH_LONG, true).show();
+                            
+                            // Tự động chuyển về màn hình đăng nhập sau 2 giây
+                            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Intent intent = new Intent(ForgotPasswordActivity.this, LoginActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            }, 2000);
                         } else {
                             showStatus(" Lỗi cập nhật mật khẩu. Vui lòng thử lại!");
                             Toasty.error(ForgotPasswordActivity.this, "Lỗi cập nhật mật khẩu!", Toasty.LENGTH_SHORT, true).show();
@@ -109,43 +106,84 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         tvStatus.setVisibility(View.GONE);
     }
 
-    private boolean sendPasswordResetEmail(String recipientEmail, String newPassword) {
-        final String senderEmail = "duynkhe170075@fpt.edu.vn"; // Email FPT của bạn
-        final String senderPassword = "xgpy rqrg zbar qscw"; // Mật khẩu ứng dụng của bạn
-        
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com"); // Sử dụng SMTP Gmail để gửi email từ tài khoản FPT
-        props.put("mail.smtp.port", "587");
+    private class SendEmailTask extends AsyncTask<Void, Void, Boolean> {
+        private final String recipientEmail;
+        private final String newPassword;
+        private boolean success = false;
 
-        Session session = Session.getInstance(props, new Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(senderEmail, senderPassword);
-            }
-        });
-
-        try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(senderEmail));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
-            message.setSubject("Khôi phục mật khẩu - PRM Assignment");
-            
-            String emailContent = "<h2>Chào bạn,</h2>"
-                + "<p>Chúng tôi đã nhận được yêu cầu khôi phục mật khẩu tài khoản của bạn.</p>"
-                + "<p>Mật khẩu mới của bạn là: <strong>" + newPassword + "</strong></p>"
-                + "<p>Vui lòng đăng nhập và thay đổi mật khẩu sau khi đăng nhập thành công.</p>"
-                + "<p>Trân trọng,</p>"
-                + "<p>Đội ngũ PRM Assignment</p>";
-            
-            message.setContent(emailContent, "text/html; charset=utf-8");
-            
-            Transport.send(message);
-            return true;
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            return false;
+        public SendEmailTask(String recipientEmail, String newPassword) {
+            this.recipientEmail = recipientEmail;
+            this.newPassword = newPassword;
         }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            final String senderEmail = "duynkhe170075@fpt.edu.vn"; // Email FPT của bạn
+            final String senderPassword = "xgpy rqrg zbar qscw"; // Mật khẩu ứng dụng của bạn
+            
+            Properties props = new Properties();
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", "smtp.gmail.com");
+            props.put("mail.smtp.port", "587");
+
+            Session session = Session.getInstance(props, new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(senderEmail, senderPassword);
+                }
+            });
+
+            try {
+                Message message = new MimeMessage(session);
+                message.setFrom(new InternetAddress(senderEmail));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
+                message.setSubject("Khôi phục mật khẩu - PRM Assignment");
+                
+                String emailContent = "<h2>Chào bạn,</h2>"
+                    + "<p>Chúng tôi đã nhận được yêu cầu khôi phục mật khẩu tài khoản của bạn.</p>"
+                    + "<p>Mật khẩu mới của bạn là: <strong>" + newPassword + "</strong></p>"
+                    + "<p>Vui lòng đăng nhập và thay đổi mật khẩu sau khi đăng nhập thành công.</p>"
+                    + "<p>Trân trọng,</p>"
+                    + "<p>Đội ngũ PRM Assignment</p>";
+                
+                message.setContent(emailContent, "text/html; charset=utf-8");
+                
+                Transport.send(message);
+                success = true;
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                success = false;
+            }
+            return success;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                showStatus(" Đã tạo mật khẩu mới và gửi đến email của bạn!");
+                Toasty.success(ForgotPasswordActivity.this, "Đã tạo mật khẩu mới và gửi đến email của bạn!", Toasty.LENGTH_LONG, true).show();
+                
+                // Tự động chuyển về màn hình đăng nhập sau 2 giây
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(ForgotPasswordActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                }, 2000);
+            } else {
+                showStatus(" Lỗi gửi email. Vui lòng thử lại!");
+                Toasty.error(ForgotPasswordActivity.this, "Lỗi gửi email!", Toasty.LENGTH_SHORT, true).show();
+            }
+            
+            // Kích hoạt lại nút sau khi xử lý xong
+            btnSend.setEnabled(true);
+        }
+    }
+
+    private void sendPasswordResetEmail(String recipientEmail, String newPassword) {
+        new SendEmailTask(recipientEmail, newPassword).execute();
     }
 
     private String generateRandomPassword() {
