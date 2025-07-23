@@ -63,4 +63,8 @@ dependencies {
     
     // Shimmer Effect
     implementation("com.facebook.shimmer:shimmer:0.5.0")
+    
+    // Email Sending
+    implementation("com.sun.mail:android-mail:1.6.7")
+    implementation("com.sun.mail:android-activation:1.6.7")
 }
