@@ -24,6 +24,7 @@ public class ProfileActivity extends AppCompatActivity {
     
     private TextView tvUserName, tvUserEmail;
     private TextInputEditText etUserName, etUserEmail, etUserPhone, etUserAddress;
+    private TextInputEditText etCurrentPassword, etNewPassword, etConfirmPassword;
     private MaterialButton btnSaveProfile;
     private LinearLayout layoutMyOrders, layoutLogout;
     private SharedPreferences sharedPreferences;
@@ -48,6 +49,9 @@ public class ProfileActivity extends AppCompatActivity {
         etUserEmail = findViewById(R.id.etUserEmail);
         etUserPhone = findViewById(R.id.etUserPhone);
         etUserAddress = findViewById(R.id.etUserAddress);
+        etCurrentPassword = findViewById(R.id.etCurrentPassword);
+        etNewPassword = findViewById(R.id.etNewPassword);
+        etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnSaveProfile = findViewById(R.id.btnSaveProfile);
         layoutMyOrders = findViewById(R.id.layoutMyOrders);
         layoutLogout = findViewById(R.id.layoutLogout);
@@ -119,6 +123,9 @@ public class ProfileActivity extends AppCompatActivity {
         String email = etUserEmail.getText().toString().trim();
         String phone = etUserPhone.getText().toString().trim();
         String address = etUserAddress.getText().toString().trim();
+        String currentPassword = etCurrentPassword.getText().toString().trim();
+        String newPassword = etNewPassword.getText().toString().trim();
+        String confirmPassword = etConfirmPassword.getText().toString().trim();
         
         if (name.isEmpty()) {
             etUserName.setError("Vui lòng nhập tên");
@@ -140,6 +147,38 @@ public class ProfileActivity extends AppCompatActivity {
         
         // Update user in database if currentUser exists
         if (currentUser != null) {
+            // Kiểm tra mật khẩu hiện tại
+            if (!currentPassword.isEmpty()) {
+                if (!currentUser.getPassword().equals(currentPassword)) {
+                    etCurrentPassword.setError("Mật khẩu hiện tại không chính xác!");
+                    etCurrentPassword.requestFocus();
+                    return;
+                }
+                
+                // Kiểm tra mật khẩu mới
+                if (newPassword.isEmpty()) {
+                    etNewPassword.setError("Vui lòng nhập mật khẩu mới");
+                    etNewPassword.requestFocus();
+                    return;
+                }
+                
+                if (newPassword.length() < 8) {
+                    etNewPassword.setError("Mật khẩu phải có ít nhất 8 ký tự");
+                    etNewPassword.requestFocus();
+                    return;
+                }
+                
+                if (!confirmPassword.equals(newPassword)) {
+                    etConfirmPassword.setError("Mật khẩu không khớp!");
+                    etConfirmPassword.requestFocus();
+                    return;
+                }
+                
+                // Cập nhật mật khẩu mới
+                currentUser.setPassword(newPassword);
+            }
+            
+            // Cập nhật thông tin cá nhân
             currentUser.setName(name);
             currentUser.setEmail(email);
             currentUser.setPhone(phone);
@@ -165,7 +204,11 @@ public class ProfileActivity extends AppCompatActivity {
                 tvUserName.setText(name);
                 tvUserEmail.setText(email);
                 
-                Toast.makeText(this, "Cập nhật thông tin thành công!", Toast.LENGTH_SHORT).show();
+                if (!currentPassword.isEmpty()) {
+                    Toast.makeText(this, "Đổi mật khẩu thành công!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Cập nhật thông tin thành công!", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Toast.makeText(this, "Cập nhật thất bại. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
             }
