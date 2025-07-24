@@ -1,4 +1,4 @@
-// com.example.assignment_prm_su25.model.OrderItem.java
+// com.example.assignment_prm_su25.ui.OrderItem.java
 package com.example.assignment_prm_su25.ui;
 
 public class OrderItem {

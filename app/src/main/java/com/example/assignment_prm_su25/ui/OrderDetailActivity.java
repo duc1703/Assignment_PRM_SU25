@@ -4,7 +4,6 @@ package com.example.assignment_prm_su25.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View; // Đảm bảo đã có
 import android.widget.LinearLayout; // Đảm bảo đã có
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,7 +19,6 @@ import com.example.assignment_prm_su25.Adapter.OrderItemAdapter;
 import com.example.assignment_prm_su25.R;
 import com.example.assignment_prm_su25.data.UserDatabaseHelper;
 import com.example.assignment_prm_su25.model.Order;
-import com.example.assignment_prm_su25.ui.OrderItem;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -14,6 +14,7 @@ import com.example.assignment_prm_su25.model.Order;
 import com.example.assignment_prm_su25.model.Rating;
 import com.example.assignment_prm_su25.model.SupportMessage;
 import com.example.assignment_prm_su25.model.SupportResponse;
+import com.example.assignment_prm_su25.model.Notification;
 import com.example.assignment_prm_su25.ui.OrderItem;
 import com.example.assignment_prm_su25.model.User;
 import com.example.assignment_prm_su25.model.Category;
@@ -118,6 +119,15 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_SUPPORT_RESPONSE_ADMIN_ID = "adminId";
     public static final String COLUMN_SUPPORT_RESPONSE_CONTENT = "responseContent";
     public static final String COLUMN_SUPPORT_RESPONSE_TIMESTAMP = "timestamp";
+    public static final String TABLE_NOTIFICATION = "notifications";
+    public static final String COLUMN_NOTIFICATION_ID = "id";
+    public static final String COLUMN_NOTIFICATION_USER_ID = "userId";
+    public static final String COLUMN_NOTIFICATION_TITLE = "title";
+    public static final String COLUMN_NOTIFICATION_MESSAGE = "message";
+    public static final String COLUMN_NOTIFICATION_TIMESTAMP = "timestamp";
+    public static final String COLUMN_NOTIFICATION_IS_READ = "isRead";
+    public static final String COLUMN_NOTIFICATION_TYPE = "type";
+    public static final String COLUMN_NOTIFICATION_RELATED_ID = "relatedId";
 
     private static final String CREATE_TABLE_USER =
             "CREATE TABLE " + TABLE_USER + " (" +
@@ -225,7 +235,18 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY(" + COLUMN_SUPPORT_RESPONSE_MESSAGE_ID + ") REFERENCES " + TABLE_SUPPORT_MESSAGE + "(" + COLUMN_SUPPORT_MESSAGE_ID + ")," +
                     "FOREIGN KEY(" + COLUMN_SUPPORT_RESPONSE_ADMIN_ID + ") REFERENCES " + TABLE_USER + "(" + COLUMN_ID + ")" +
                     ")";
-
+    private static final String CREATE_TABLE_NOTIFICATION =
+            "CREATE TABLE " + TABLE_NOTIFICATION + " (" +
+                    COLUMN_NOTIFICATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_NOTIFICATION_USER_ID + " INTEGER, " +
+                    COLUMN_NOTIFICATION_TITLE + " TEXT, " +
+                    COLUMN_NOTIFICATION_MESSAGE + " TEXT, " +
+                    COLUMN_NOTIFICATION_TIMESTAMP + " INTEGER, " +
+                    COLUMN_NOTIFICATION_IS_READ + " INTEGER, " + // 0 for false, 1 for true
+                    COLUMN_NOTIFICATION_TYPE + " TEXT, " +
+                    COLUMN_NOTIFICATION_RELATED_ID + " INTEGER, " +
+                    "FOREIGN KEY(" + COLUMN_NOTIFICATION_USER_ID + ") REFERENCES " + TABLE_USER + "(" + COLUMN_ID + ")" +
+                    ")";
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_USER);
@@ -239,6 +260,8 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_RATING);
         db.execSQL(CREATE_TABLE_SUPPORT_MESSAGE);
         db.execSQL(CREATE_TABLE_SUPPORT_RESPONSE);
+        db.execSQL(CREATE_TABLE_NOTIFICATION);
+
     }
 
     @Override
@@ -254,6 +277,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BRAND);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SUPPORT_MESSAGE);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SUPPORT_RESPONSE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTIFICATION);
         onCreate(db);
     }
     public void createDefaultAdminUser() {
@@ -931,22 +955,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         }
         return messageList;
     }
-    public boolean addSupportResponse(SupportResponse response) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_SUPPORT_RESPONSE_MESSAGE_ID, response.getMessageId());
-        values.put(COLUMN_SUPPORT_RESPONSE_ADMIN_ID, response.getAdminId());
-        values.put(COLUMN_SUPPORT_RESPONSE_CONTENT, response.getResponseContent());
-        values.put(COLUMN_SUPPORT_RESPONSE_TIMESTAMP, response.getTimestamp());
 
-        long result = db.insert(TABLE_SUPPORT_RESPONSE, null, values);
-        if (result != -1) {
-            // Cập nhật trạng thái của tin nhắn hỗ trợ thành "Replied"
-            updateSupportMessageStatus(response.getMessageId(), "Replied");
-            return true;
-        }
-        return false;
-    }
 
     // Lấy tất cả câu trả lời cho một tin nhắn hỗ trợ cụ thể
     public List<SupportResponse> getSupportResponsesByMessageId(int messageId) {
@@ -988,6 +997,8 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         return rowsAffected > 0;
     }
 
+
+
     // Phương thức mới để lấy SupportMessage theo ID (cần cho SupportMessageDetailActivity)
     public SupportMessage getSupportMessageById(int messageId) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1012,4 +1023,141 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         }
         return message;
     }
+    // Thêm một thông báo mới
+    public boolean addNotification(Notification notification) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NOTIFICATION_USER_ID, notification.getUserId());
+        values.put(COLUMN_NOTIFICATION_TITLE, notification.getTitle());
+        values.put(COLUMN_NOTIFICATION_MESSAGE, notification.getMessage());
+        values.put(COLUMN_NOTIFICATION_TIMESTAMP, notification.getTimestamp());
+        values.put(COLUMN_NOTIFICATION_IS_READ, notification.isRead() ? 1 : 0);
+        values.put(COLUMN_NOTIFICATION_TYPE, notification.getType());
+        values.put(COLUMN_NOTIFICATION_RELATED_ID, notification.getRelatedId());
+
+        long result = db.insert(TABLE_NOTIFICATION, null, values);
+        return result != -1;
+    }
+
+    // Lấy tất cả thông báo cho một người dùng cụ thể
+    public List<Notification> getNotificationsByUserId(int userId) {
+        List<Notification> notificationList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.query(TABLE_NOTIFICATION, null,
+                    COLUMN_NOTIFICATION_USER_ID + "=?",
+                    new String[]{String.valueOf(userId)},
+                    null, null, COLUMN_NOTIFICATION_TIMESTAMP + " DESC"); // Sắp xếp theo thời gian mới nhất
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    Notification notification = new Notification();
+                    notification.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_ID)));
+                    notification.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_USER_ID)));
+                    notification.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_TITLE)));
+                    notification.setMessage(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_MESSAGE)));
+                    notification.setTimestamp(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_TIMESTAMP)));
+                    notification.setRead(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_IS_READ)) == 1);
+                    notification.setType(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_TYPE)));
+                    notification.setRelatedId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_RELATED_ID)));
+                    notificationList.add(notification);
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return notificationList;
+    }
+
+    // Đánh dấu thông báo là đã đọc
+    public boolean markNotificationAsRead(int notificationId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NOTIFICATION_IS_READ, 1); // 1 for true (read)
+        int rowsAffected = db.update(TABLE_NOTIFICATION, values,
+                COLUMN_NOTIFICATION_ID + "=?", new String[]{String.valueOf(notificationId)});
+        return rowsAffected > 0;
+    }
+
+    // Lấy số lượng thông báo chưa đọc cho một người dùng
+    public int getUnreadNotificationCount(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int count = 0;
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_NOTIFICATION +
+                            " WHERE " + COLUMN_NOTIFICATION_USER_ID + "=? AND " + COLUMN_NOTIFICATION_IS_READ + "=0",
+                    new String[]{String.valueOf(userId)});
+            if (cursor != null && cursor.moveToFirst()) {
+                count = cursor.getInt(0);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return count;
+    }
+    public boolean addSupportResponse(SupportResponse response) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SUPPORT_RESPONSE_MESSAGE_ID, response.getMessageId());
+        values.put(COLUMN_SUPPORT_RESPONSE_ADMIN_ID, response.getAdminId()); // Đây là ID của người trả lời
+        values.put(COLUMN_SUPPORT_RESPONSE_CONTENT, response.getResponseContent());
+        values.put(COLUMN_SUPPORT_RESPONSE_TIMESTAMP, response.getTimestamp());
+
+        long result = db.insert(TABLE_SUPPORT_RESPONSE, null, values);
+        if (result != -1) {
+            // Lấy thông tin tin nhắn gốc và người trả lời để quyết định tạo thông báo
+            SupportMessage originalMessage = getSupportMessageById(response.getMessageId());
+            User replierUser = getUserById(response.getAdminId()); // Lấy đối tượng User của người trả lời
+
+            if (originalMessage != null && replierUser != null) {
+                String newStatusForMessage = originalMessage.getStatus(); // Trạng thái mặc định
+                String notificationTitle = "";
+                String notificationMessage = "";
+                boolean createNotificationForOriginalUser = false; // Biến kiểm soát việc tạo thông báo cho người dùng gốc
+
+                if ("admin".equals(replierUser.getRole())) {
+                    // Người trả lời là ADMIN
+                    newStatusForMessage = "Replied"; // Đánh dấu tin nhắn đã được admin trả lời
+                    notificationTitle = "Phản hồi về yêu cầu hỗ trợ của bạn";
+                    notificationMessage = "Admin đã trả lời yêu cầu hỗ trợ của bạn: \"" + originalMessage.getSubject() + "\"";
+                    // Chỉ tạo thông báo cho người dùng gốc nếu admin trả lời tin nhắn của họ
+                    if (originalMessage.getUserId() != replierUser.getId()) { // Đảm bảo admin không trả lời tin nhắn của chính họ (nếu có)
+                        createNotificationForOriginalUser = true;
+                    }
+                } else {
+                    // Người trả lời là USER (người gửi tin nhắn gốc đang trả lời/theo dõi)
+                    newStatusForMessage = "User Follow-up"; // Hoặc "New" để đưa nó lên đầu danh sách admin
+                    // Không tạo thông báo cho chính người dùng đã gửi
+                    createNotificationForOriginalUser = false;
+                }
+
+                // Cập nhật trạng thái của tin nhắn hỗ trợ gốc
+                updateSupportMessageStatus(originalMessage.getId(), newStatusForMessage);
+
+                // Tạo thông báo cho người dùng gốc CHỈ KHI cần thiết
+                if (createNotificationForOriginalUser) {
+                    Notification userNotification = new Notification(
+                            0, // ID tự động tăng
+                            originalMessage.getUserId(), // Người nhận thông báo là người gửi tin nhắn gốc
+                            notificationTitle,
+                            notificationMessage,
+                            System.currentTimeMillis(),
+                            false, // Chưa đọc
+                            "admin_reply", // Loại thông báo
+                            originalMessage.getId() // ID của tin nhắn hỗ trợ gốc
+                    );
+                    addNotification(userNotification); // Thêm thông báo vào DB
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
 }

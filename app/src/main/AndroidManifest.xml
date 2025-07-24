@@ -36,7 +36,6 @@
         <activity android:name=".ui.SupportMessageListActivity" android:parentActivityName=".MainActivity" />
         <activity android:name=".ui.OrderListActivity" android:parentActivityName=".ui.ProfileActivity" />
         <activity android:name=".ui.OrderDetailActivity" android:parentActivityName=".ui.OrderListActivity" />
-
     </application>
 
 </manifest>
