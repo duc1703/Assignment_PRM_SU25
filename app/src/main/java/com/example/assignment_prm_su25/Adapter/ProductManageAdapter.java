@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -29,7 +30,7 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
 
     public interface OnItemClickListener {
         void onItemClick(Product product);
-        void onAddToCartClick(Product product);
+        void onEditClick(Product product);
         void onDeleteClick(Product product);
     }
 
@@ -64,6 +65,8 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
         // Set basic product info
         holder.tvProductName.setText(product.getName());
         holder.tvProductDescription.setText(product.getDescription());
+        DecimalFormat formatter = new DecimalFormat("###,###,###");
+        holder.tvProductPrice.setText(formatter.format(product.getPrice()) + "₫");
         holder.ratingBar.setRating(product.getRating());
         Glide.with(context)
                 .load(product.getImageUrl())
@@ -78,10 +81,16 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
                 }
             }
         });
-        // Đặt lại sự kiện click cho nút thêm vào giỏ
-        holder.btnAddToCart.setOnClickListener(v -> {
+
+        holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onAddToCartClick(product);
+                listener.onEditClick(product);
+            }
+        });
+
+        holder.btnDelete.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onDeleteClick(product);
             }
         });
     }
@@ -97,6 +106,7 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
         TextView tvBrand, tvSizeColor, tvDiscount, tvStock;
         RatingBar ratingBar;
         View btnAddToCart;
+        ImageButton btnEdit, btnDelete;
 
         public ProductManageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -110,7 +120,8 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
             tvDiscount = itemView.findViewById(R.id.tvDiscount);
             tvStock = itemView.findViewById(R.id.tvStock);
             ratingBar = itemView.findViewById(R.id.ratingBarItem);
-            btnAddToCart = itemView.findViewById(R.id.btnAddToCart);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
 
         }
     }

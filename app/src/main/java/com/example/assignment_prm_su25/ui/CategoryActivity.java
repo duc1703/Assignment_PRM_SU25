@@ -1,7 +1,10 @@
 package com.example.assignment_prm_su25.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.assignment_prm_su25.Adapter.CategoryAdapter;
 import com.example.assignment_prm_su25.R;
@@ -34,6 +38,10 @@ public class CategoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        setTitle("Quản lý danh mục");
+
         rvCategoryList = findViewById(R.id.rvCategoryList);
         fabAddCategory = findViewById(R.id.fabAddCategory);
         dbHelper = UserDatabaseHelper.getInstance(this);
@@ -50,6 +58,22 @@ public class CategoryActivity extends AppCompatActivity {
                 showCategoryDialog(null);
             }
         });
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_manage, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_products) {
+            // Chuyển đến ProductActivity
+            Intent intent = new Intent(this, ProductActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void loadCategories() {

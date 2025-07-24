@@ -1,90 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/edtProductName"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvProductList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"/>
+
+    </RelativeLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddProduct"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Tên sản phẩm" />
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_input_add"/>
 
-    <EditText
-        android:id="@+id/edtProductDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Mô tả sản phẩm" />
-
-    <EditText
-        android:id="@+id/edtProductPrice"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Giá sản phẩm"
-        android:inputType="numberDecimal" />
-
-    <EditText
-        android:id="@+id/edtProductImage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Link ảnh (hoặc tên file)" />
-
-    <Spinner
-        android:id="@+id/spinnerCategory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="8dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Đánh giá: " />
-        <RatingBar
-            android:id="@+id/ratingBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:numStars="5"
-            android:stepSize="1.0"
-            android:rating="5" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="8dp">
-        <Button
-            android:id="@+id/btnAddProduct"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Thêm" />
-        <Button
-            android:id="@+id/btnUpdateProduct"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cập nhật"
-            android:layout_marginStart="8dp" />
-        <Button
-            android:id="@+id/btnClearProduct"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Xóa trắng"
-            android:layout_marginStart="8dp" />
-    </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvProductList"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="16dp" />
-
-</LinearLayout> 
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

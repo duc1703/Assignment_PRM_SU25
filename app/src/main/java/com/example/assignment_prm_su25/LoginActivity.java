@@ -133,8 +133,10 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent;
                     if (user.getRole() != null && user.getRole().equalsIgnoreCase("admin")) {
                         intent = new Intent(LoginActivity.this, com.example.assignment_prm_su25.ui.AdminActivity.class);
+                    }else if (user.getRole() != null && user.getRole().equalsIgnoreCase("staff")) {
+                        intent = new Intent(LoginActivity.this, ProductActivity.class);
                     } else {
-                        intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent = new Intent(LoginActivity.this, ProductActivity.class);
                     }
                     startActivity(intent);
                     finish();
