@@ -68,8 +68,11 @@ public class CategoryActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_products) {
-            // Chuyển đến ProductActivity
             Intent intent = new Intent(this, ProductActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (id == R.id.menu_support_messages) {
+            Intent intent = new Intent(this, SupportMessageListActivity.class);
             startActivity(intent);
             return true;
         }

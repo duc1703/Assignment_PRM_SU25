@@ -69,9 +69,18 @@ public class SupportMessageListActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
             onBackPressed();
+            return true;
+        } else if (id == R.id.menu_products) {
+            Intent intent = new Intent(this, ProductActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (id == R.id.menu_categories) {
+            Intent intent = new Intent(this, CategoryActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);

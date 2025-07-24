@@ -9,4 +9,8 @@
         android:id="@+id/menu_categories"
         android:title="Danh mục"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_support_messages"
+        android:title="Tin nhắn hỗ trợ"
+        app:showAsAction="never"/>
 </menu>

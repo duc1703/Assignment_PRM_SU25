@@ -112,17 +112,7 @@ public class ProfileActivity extends AppCompatActivity {
         etUserAddress.setText(userAddress);
     }
     
-    private void setupClickListeners() {
-        btnSaveProfile.setOnClickListener(v -> saveUserProfile());
-        
-        btnChangePassword.setOnClickListener(v -> togglePasswordFields());
-        
-        layoutMyOrders.setOnClickListener(v -> {
-            Toast.makeText(this, "Chức năng đang phát triển", Toast.LENGTH_SHORT).show();
-        });
-        
-        layoutLogout.setOnClickListener(v -> logout());
-    }
+
     
     private void togglePasswordFields() {
         if (layoutPasswordFields.getVisibility() == View.VISIBLE) {
@@ -138,6 +128,16 @@ public class ProfileActivity extends AppCompatActivity {
             // Focus on current password field when showing
             etCurrentPassword.requestFocus();
         }
+    }
+    private void setupClickListeners() {
+        btnSaveProfile.setOnClickListener(v -> saveUserProfile());
+
+        layoutMyOrders.setOnClickListener(v -> {
+            Intent intent = new Intent(ProfileActivity.this, OrderListActivity.class);
+            startActivity(intent);
+        });
+
+        layoutLogout.setOnClickListener(v -> logout());
     }
     
     private void saveUserProfile() {
