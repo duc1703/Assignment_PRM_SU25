@@ -4,44 +4,38 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.google.android.material.button.MaterialButton;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.assignment_prm_su25.R;
 import com.example.assignment_prm_su25.model.User;
-import com.google.android.material.button.MaterialButton;
+
 import java.util.List;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
-    public interface OnUserActionListener {
-        void onEdit(User user);
-        void onDelete(User user);
-    }
-    private Context context;
-    private List<User> userList;
-    private OnUserActionListener listener;
 
-    public UserAdapter(Context context, List<User> userList, OnUserActionListener listener) {
-        this.context = context;
+    private final List<User> userList;
+    private final OnUserListener onUserListener;
+
+    public UserAdapter(List<User> userList, OnUserListener onUserListener) {
         this.userList = userList;
-        this.listener = listener;
+        this.onUserListener = onUserListener;
     }
 
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_user, parent, false);
-        return new UserViewHolder(view);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user, parent, false);
+        return new UserViewHolder(view, onUserListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = userList.get(position);
-        holder.tvName.setText(user.getName());
-        holder.tvEmail.setText(user.getEmail());
-        holder.tvRole.setText(user.getRole());
-        holder.btnEdit.setOnClickListener(v -> listener.onEdit(user));
-        holder.btnDelete.setOnClickListener(v -> listener.onDelete(user));
+        holder.bind(user);
     }
 
     @Override
@@ -50,15 +44,44 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     }
 
     public static class UserViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvEmail, tvRole;
-        MaterialButton btnEdit, btnDelete;
-        public UserViewHolder(@NonNull View itemView) {
+        private final TextView nameTextView;
+        private final TextView emailTextView;
+        private final TextView roleTextView;
+        private final MaterialButton editButton;
+        private final MaterialButton deleteButton;
+        private final OnUserListener onUserListener;
+
+        public UserViewHolder(@NonNull View itemView, OnUserListener onUserListener) {
             super(itemView);
-            tvName = itemView.findViewById(R.id.tvUserName);
-            tvEmail = itemView.findViewById(R.id.tvUserEmail);
-            tvRole = itemView.findViewById(R.id.tvUserRole);
-            btnEdit = itemView.findViewById(R.id.btnEditUser);
-            btnDelete = itemView.findViewById(R.id.btnDeleteUser);
+            nameTextView = itemView.findViewById(R.id.user_name_text_view);
+            emailTextView = itemView.findViewById(R.id.user_email_text_view);
+            roleTextView = itemView.findViewById(R.id.user_role_text_view);
+            editButton = itemView.findViewById(R.id.edit_button);
+            deleteButton = itemView.findViewById(R.id.delete_button);
+            this.onUserListener = onUserListener;
         }
+
+        public void bind(final User user) {
+            nameTextView.setText(user.getName());
+            emailTextView.setText(user.getEmail());
+            roleTextView.setText(user.getRole());
+
+            editButton.setOnClickListener(v -> {
+                if (onUserListener != null) {
+                    onUserListener.onEditClick(getAdapterPosition());
+                }
+            });
+
+            deleteButton.setOnClickListener(v -> {
+                if (onUserListener != null) {
+                    onUserListener.onDeleteClick(getAdapterPosition());
+                }
+            });
+        }
+    }
+
+    public interface OnUserListener {
+        void onEditClick(int position);
+        void onDeleteClick(int position);
     }
 }

@@ -5,6 +5,7 @@ public class Cart {
     private int userId;
     private int productId;
     private int quantity;
+    private Product product; // Added Product object to hold product details
 
     public Cart() {}
 
@@ -45,5 +46,13 @@ public class Cart {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+    
+    public Product getProduct() {
+        return product;
+    }
+    
+    public void setProduct(Product product) {
+        this.product = product;
     }
 }
