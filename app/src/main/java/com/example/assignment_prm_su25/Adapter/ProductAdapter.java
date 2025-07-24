@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.assignment_prm_su25.R;
+import com.example.assignment_prm_su25.data.UserDatabaseHelper;
+import com.example.assignment_prm_su25.model.Category;
 import com.example.assignment_prm_su25.model.Product;
 
 import java.text.DecimalFormat;
@@ -65,6 +67,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.tvProductName.setText(product.getName());
         holder.tvProductDescription.setText(product.getDescription());
         holder.ratingBar.setRating(product.getRating());
+        DecimalFormat formatter = new DecimalFormat("###,###,###");
+        holder.tvProductPrice.setText(formatter.format(product.getPrice()) + "₫");
         Glide.with(context)
                 .load(product.getImageUrl())
                 .placeholder(R.drawable.shimmer_effect)
@@ -78,6 +82,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 }
             }
         });
+        UserDatabaseHelper dbHelper = UserDatabaseHelper.getInstance(context);
+        Category category = dbHelper.getCategoryById(product.getCategoryId());
+        if (category != null) {
+            holder.tvBrand.setText(category.getName());
+            holder.tvBrand.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvBrand.setVisibility(View.GONE);
+        }
+        holder.tvStock.setVisibility(View.GONE);  // Hide stock for now
+        holder.tvSizeColor.setVisibility(View.GONE);  // Hide size/color for now
+        holder.tvOriginalPrice.setVisibility(View.GONE);  // Hide original price for now
+        holder.tvDiscount.setVisibility(View.GONE);
         // Đặt lại sự kiện click cho nút thêm vào giỏ
         holder.btnAddToCart.setOnClickListener(v -> {
             if (listener != null) {

@@ -136,7 +136,7 @@ public class LoginActivity extends AppCompatActivity {
                     }else if (user.getRole() != null && user.getRole().equalsIgnoreCase("staff")) {
                         intent = new Intent(LoginActivity.this, ProductActivity.class);
                     } else {
-                        intent = new Intent(LoginActivity.this, ProductActivity.class);
+                        intent = new Intent(LoginActivity.this, MainActivity.class);
                     }
                     startActivity(intent);
                     finish();

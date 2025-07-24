@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.assignment_prm_su25.R;
+import com.example.assignment_prm_su25.data.UserDatabaseHelper;
+import com.example.assignment_prm_su25.model.Category;
 import com.example.assignment_prm_su25.model.Product;
 
 import java.text.DecimalFormat;
@@ -27,6 +29,7 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
     private Context context;
     private List<Product> productList;
     private OnItemClickListener listener;
+    private UserDatabaseHelper dbHelper;
 
     public interface OnItemClickListener {
         void onItemClick(Product product);
@@ -41,6 +44,7 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
     public ProductManageAdapter(Context context, List<Product> productList) {
         this.context = context;
         this.productList = productList;
+        this.dbHelper = UserDatabaseHelper.getInstance(context);
     }
 
     public void updateProducts(List<Product> productList) {
@@ -62,11 +66,13 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
     @Override
     public void onBindViewHolder(@NonNull ProductManageViewHolder holder, int position) {
         Product product = productList.get(position);
+        Category category = dbHelper.getCategoryById(product.getCategoryId());
         // Set basic product info
         holder.tvProductName.setText(product.getName());
         holder.tvProductDescription.setText(product.getDescription());
         DecimalFormat formatter = new DecimalFormat("###,###,###");
         holder.tvProductPrice.setText(formatter.format(product.getPrice()) + "₫");
+        holder.tvCategory.setText(category != null ? category.getName() : "Không có danh mục");
         holder.ratingBar.setRating(product.getRating());
         Glide.with(context)
                 .load(product.getImageUrl())
@@ -102,8 +108,8 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
 
     public static class ProductManageViewHolder extends RecyclerView.ViewHolder {
         ImageView imgProduct;
-        TextView tvProductName, tvProductDescription, tvProductPrice, tvOriginalPrice;
-        TextView tvBrand, tvSizeColor, tvDiscount, tvStock;
+        TextView tvProductName, tvProductDescription, tvProductPrice,tvCategory;
+
         RatingBar ratingBar;
         View btnAddToCart;
         ImageButton btnEdit, btnDelete;
@@ -114,11 +120,8 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
             tvProductName = itemView.findViewById(R.id.tvProductName);
             tvProductDescription = itemView.findViewById(R.id.tvProductDescription);
             tvProductPrice = itemView.findViewById(R.id.tvProductPrice);
-            tvOriginalPrice = itemView.findViewById(R.id.tvOriginalPrice);
-            tvBrand = itemView.findViewById(R.id.tvBrand);
-            tvSizeColor = itemView.findViewById(R.id.tvSizeColor);
-            tvDiscount = itemView.findViewById(R.id.tvDiscount);
-            tvStock = itemView.findViewById(R.id.tvStock);
+            tvCategory = itemView.findViewById(R.id.tvCategory);
+
             ratingBar = itemView.findViewById(R.id.ratingBarItem);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);

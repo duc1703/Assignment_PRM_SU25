@@ -43,6 +43,26 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
             updateUser(user);
         }
     }
+
+    public void addOrUpdateStaffXyzGmail() {
+        String email = "xyz@gmail.com";
+        User user = getUserByEmail(email);
+        if (user == null) {
+            // Thêm mới staff nếu chưa có
+            User staff = new User();
+            staff.setName("Staff");
+            staff.setEmail(email);
+            staff.setPassword("staff123"); // Đặt mật khẩu mặc định
+            staff.setRole("staff");
+            staff.setPhone("");
+            staff.setAddress("");
+            addUser(staff);
+        } else if (!"staff".equals(user.getRole())) {
+            // Nếu đã có nhưng chưa phải staff thì cập nhật role
+            user.setRole("staff");
+            updateUser(user);
+        }
+    }
     // ...existing code...
     // Lấy toàn bộ user
     public java.util.List<User> getAllUsers() {
@@ -121,7 +141,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_BRAND_NAME + " TEXT, " +
                     COLUMN_BRAND_DESCRIPTION + " TEXT)";
     private static final String DATABASE_NAME = "sneaker_shop.db";
-    private static final int DATABASE_VERSION = 32; // Incremented version to ensure cart table is created
+    private static final int DATABASE_VERSION = 33; // Incremented version to ensure cart table is created
 
     private static UserDatabaseHelper instance;
 
@@ -303,6 +323,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         // Đảm bảo luôn có tài khoản admin abc@gmail.com khi khởi tạo DB helper
         addOrUpdateAdminAbcGmail();
+        addOrUpdateStaffXyzGmail();
     }
     private static final String CREATE_TABLE_SUPPORT_RESPONSE =
             "CREATE TABLE " + TABLE_SUPPORT_RESPONSE + " (" +
@@ -503,6 +524,36 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         int rows = db.delete(TABLE_CATEGORY, COLUMN_CATEGORY_ID + "=?", new String[]{String.valueOf(categoryId)});
         return rows > 0;
+    }
+    public Category getCategoryById(int categoryId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Category category = null;
+        Cursor cursor = null;
+
+        try {
+            cursor = db.query(
+                    TABLE_CATEGORY,
+                    null,
+                    COLUMN_CATEGORY_ID + "=?",
+                    new String[]{String.valueOf(categoryId)},
+                    null,
+                    null,
+                    null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                category = new Category();
+                category.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CATEGORY_ID)));
+                category.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CATEGORY_NAME)));
+                category.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CATEGORY_DESCRIPTION)));
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return category;
     }
 
     // CRUD cho Product
